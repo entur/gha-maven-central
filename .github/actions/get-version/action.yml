@@ -30,8 +30,8 @@
         shell: bash
         run: |
           VALID_STRATEGIES=("file" "tag")
-          if [[ ! " ${VALID_STRATEGIES[@]} " =~ " ${version_strategy} " ]]; then
-            echo "Invalid version_strategy: '${version_strategy}'. Must be one of: ${VALID_STRATEGIES[*]}"
+          if [[ ! " ${VALID_STRATEGIES[@]} " =~ " ${{ inputs.version_strategy }} " ]]; then
+            echo "Invalid version_strategy: '${{ inputs.version_strategy }}'. Must be one of: ${VALID_STRATEGIES[*]}"
             exit 1
           fi
 
