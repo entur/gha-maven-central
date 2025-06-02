@@ -1,0 +1,75 @@
+  name: Get Current Artifact Version
+  description: Get current artifact version from tag or file. Expects semver, e.g., 'version=1.0.2'
+  inputs:
+    version_strategy:
+      required: false
+      default: 'file'
+    version_file_name:
+      description: 'The name of the file containing the version number'
+      required: false
+      default: 'gradle.properties'
+    version_variable_name:
+      description: 'The name of the variable containing the version number'
+      required: false
+      default: 'version'
+    version_tag_prefix:
+      description: 'The prefix of the tag containing the version number'
+      required: false
+      default: 'v'
+  
+  outputs:
+    version:
+      value: ${{ env.VERSION }}
+      description: 'The current version of the artifact'
+
+  runs:
+    using: "composite"
+    steps:
+      - name: Verify inputs
+        shell: bash
+        run: |
+          # ADD VERIFICATION OF VALID STRATEGIES HERE
+          # CURRENTLY TAG AND FILE ARE SUPPORTED
+
+      - name: Get Version Number From File
+        if: ${{ version_strategy == 'file' }}
+        shell: bash
+        env:
+          GHA_VERSION_FILE_NAME: ${{ inputs.version_file_name }}
+          GHA_VERSION_VARIABLE_NAME: ${{ inputs.version_variable_name }}
+        run: |
+          FILE_NAME= echo "$GHA_VERSION_FILE_NAME" | awk -F. '{print tolower($NF)}'
+          if [[ $FILE_NAME == "properties" ]]; then
+            PREVIOUS_VERSION=$(cat ${GHA_VERSION_FILE_NAME} | grep "${GHA_VERSION_VARIABLE_NAME}" | cut -d'=' -f2)
+          elif [[ $FILE_NAME == "xml" ]]; then
+            PREVIOUS_VERSION="1.0.0"
+          else
+            echo "Expected a version file to be a gradle .properties or pom .xml file for version extraction"
+            exit 1
+          fi
+
+          if [ "$PREVIOUS_VERSION" = "" ]; then
+            echo "Expected a preexisting version"
+            exit 1
+          fi
+
+          echo "Previous release version is: $PREVIOUS_VERSION"
+          echo "VERSION=$PREVIOUS_VERSION" >> $GITHUB_ENV
+      
+      - name: Get Version Number From Tag
+        if: ${{ version_strategy == 'tag' }}
+        shell: bash
+        env:
+          GHA_TAG_PREFIX: ${{ inputs.version_tag_prefix }}
+        run: |
+          PREVIOUS_TAG=$(git tag -l --sort -version:refname "${GHA_TAG_PREFIX}*" | head -n 1)
+          if [ "$PREVIOUS_TAG" = "" ]; then
+            echo "Expected a preexisting tag on the form '${GHA_TAG_PREFIX}x.y.z' for version extraction"
+            exit 1
+          fi
+          
+          REL_LEN=$(echo ${GHA_TAG_PREFIX} | wc -c | xargs)
+          PREVIOUS_VERSION=$(echo $PREVIOUS_TAG | cut -c ${REL_LEN}-)
+
+          echo "Previous release version tag is: $PREVIOUS_TAG"
+          echo "VERSION=$releaseVersion" >> $GITHUB_ENV
