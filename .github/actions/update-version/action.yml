@@ -1,0 +1,133 @@
+  name: Update Artifact Version
+  description: Update artifact version by pushing bumping version back to the repo. Expects semver, e.g., 'version=1.0.2'
+  inputs:
+    version_strategy:
+      required: false
+      default: 'file'
+    # FILE STRATEGY
+    version_file_name:
+      description: 'The name of the file containing the version number'
+      required: false
+      default: 'gradle.properties'
+    version_variable_name:
+      description: 'The name of the variable containing the version number'
+      required: false
+      default: 'version'
+    # TAG STRATEGY
+    version_tag_prefix:
+      description: 'The prefix of the tag containing the version number'
+      required: false
+      default: 'v'
+    # Options
+    version_increment:
+      default: ''
+      required: false
+    previous_version:
+      description: 'The previous (semver) version of the artifact'
+      required: false
+    push_back_to_repo:
+      description: 'Whether to push the new version back to the repo'
+      required: false
+      default: 'true'
+  
+  outputs:
+    version:
+      value: ${{ env.VERSION }}
+      description: 'The new version of the artifact'
+
+  runs:
+    using: "composite"
+    steps:
+      - name: Get previous version if not provided
+        if: ${{ previous_version == '' }}
+        uses: entur/gha-maven-central/.github/actions/get-version@v1
+        with:
+          version_strategy: ${{ inputs.version_strategy }}
+          version_file_name: ${{ inputs.version_file_name }}
+          version_variable_name: ${{ inputs.version_variable_name }}
+          version_tag_prefix: ${{ inputs.version_tag_prefix }}
+
+      - name: Set Previous Version as ENV variable if passed as input and not file
+        if: ${{ !inputs.version_file_name && inputs.previous-version }}
+        shell: bash
+        env:
+          GHA_MAVENCENTRAL_PREVIOUS_VERSION: ${{ inputs.previous-version }}
+        run: echo "RELEASE_VERSION=${GHA_MAVENCENTRAL_PREVIOUS_VERSION}" >> $GITHUB_ENV
+      
+      - name: Increment version number
+        shell: bash
+        env:
+          GHA_MAVENCENTRAL_VERSION_INCREMENT: {{ inputs.version_increment }}
+        run: |
+          VERSION_INCREMENT="patch"
+
+          if [ $GHA_MAVENCENTRAL_VERSION_INCREMENT = "" ]; then
+            COMMIT_MESSAGE=$(git log --format="%B" -n 1)
+            if [[ $COMMIT_MESSAGE =~ \[ ]]; then
+              BRACKET_PAYLOADS=$(echo "$COMMIT_MESSAGE" | grep -Po "(?<=\[)[^\]]*(?=\])")
+              
+              while IFS= read -r BRACKET_PAYLOAD; do
+                BRACKET_PAYLOAD_TRIMMED=$(echo "$BRACKET_PAYLOAD" | tr -d '[:blank:]')
+                BRACKET_PAYLOAD_TRIMMED_LOWERCASE=$(tr '[:upper:]' '[:lower:]' <<<"$BRACKET_PAYLOAD_TRIMMED" )
+                
+                # detect type      
+                if [ "$BRACKET_PAYLOAD_TRIMMED_LOWERCASE" = "minor" ]; then
+                  VERSION_INCREMENT="minor"
+                elif [ "$BRACKET_PAYLOAD_TRIMMED_LOWERCASE" = "major" ]; then
+                  VERSION_INCREMENT="major"
+                elif [ "$BRACKET_PAYLOAD_TRIMMED_LOWERCASE" = "patch" ]; then
+                  VERSION_INCREMENT="patch"
+                fi
+
+              done <<< "$BRACKET_PAYLOADS"
+            fi
+          else 
+            VERSION_INCREMENT=$GHA_MAVENCENTRAL_VERSION_INCREMENT
+          fi
+
+          major=$(echo "$RELEASE_VERSION" | cut -d. -f1)
+          minor=$(echo "$RELEASE_VERSION" | cut -d. -f2)
+          patch=$(echo "$RELEASE_VERSION" | cut -d. -f3)
+
+          if [ "$VERSION_INCREMENT" = "minor" ]; then
+            minor="$((minor + 1))"
+            patch="0"
+          elif [ "$VERSION_INCREMENT" = "major" ]; then
+            MAJOR="$((major + 1))"
+            minor="0"
+            patch="0"
+          elif [ "$VERSION_INCREMENT" = "patch" ]; then
+            patch="$((patch + 1))"
+          else 
+            echo "Expected increment patch, minor or major, got $VERSION_INCREMENT"
+            exit 1
+          fi
+
+          version="$major.$minor.$patch"
+          echo "Release version is $version"
+
+          echo "VERSION=$version" >> $GITHUB_ENV
+      
+      - name: Insert new version into file
+        shell: bash
+        env:
+          GHA_ARTIFACTORY_VERSION_FILE_NAME: ${{ inputs.version_file_name }}
+          GHA_ARTIFACTORY_VERSION_VARIABLE_NAME: ${{ inputs.version_variable_name }}
+          GHA_ARTIFACTORY_VERSION: ${{ env.VERSION }}
+        run: |
+          sed -i "s/${GHA_ARTIFACTORY_VERSION_VARIABLE_NAME}=.*/${GHA_ARTIFACTORY_VERSION_VARIABLE_NAME}=$GHA_ARTIFACTORY_VERSION/" ${GHA_ARTIFACTORY_VERSION_FILE_NAME}
+      
+      - name: Push Version
+        if: ${{ inputs.push_back_to_repo == 'true' }}
+        shell: bash
+        env:
+            GHA_MAVENCENTRAL_GITHUB_REF_NAME: ${{ github.ref }}
+            GHA_MAVENCENTRAL_VERSION_FILE_NAME: ${{ inputs.version_file_name }}
+            GHA_MAVENCENTRAL_ARTIFACTORY_VERSION_VARIABLE_NAME: ${{ inputs.version_variable_name }}
+            GHA_MAVENCENTRAL_ARTIFACTORY_VERSION: ${{ env.VERSION }}
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add "${GHA_MAVENCENTRAL_VERSION_FILE_NAME}"
+          git commit -m "chore(bump): from ${GHA_MAVENCENTRAL_ARTIFACTORY_VERSION_VARIABLE_NAME} to ${VERSION} [skip ci]"
+          git push origin "${GHA_MAVENCENTRAL_GITHUB_REF_NAME}" --force
