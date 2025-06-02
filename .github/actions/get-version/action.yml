@@ -2,6 +2,7 @@
   description: Get current artifact version from tag or file. Expects semver, e.g., 'version=1.0.2'
   inputs:
     version_strategy:
+      description: 'Strategy to use for version extraction. Currently supports "file" or "tag".'
       required: false
       default: 'file'
     version_file_name:
@@ -28,8 +29,11 @@
       - name: Verify inputs
         shell: bash
         run: |
-          # ADD VERIFICATION OF VALID STRATEGIES HERE
-          # CURRENTLY TAG AND FILE ARE SUPPORTED
+          VALID_STRATEGIES=("file" "tag")
+          if [[ ! " ${VALID_STRATEGIES[@]} " =~ " ${version_strategy} " ]]; then
+            echo "Invalid version_strategy: '${version_strategy}'. Must be one of: ${VALID_STRATEGIES[*]}"
+            exit 1
+          fi
 
       - name: Get Version Number From File
         if: ${{ version_strategy == 'file' }}
