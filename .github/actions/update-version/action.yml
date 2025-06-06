@@ -132,7 +132,7 @@
               done
           }
 
-          file_ext=$(echo "GHA_MAVENCENTRAL_VERSION_FILE_NAME" | awk -F. '{print tolower($NF)}')
+          file_ext=$(echo "$GHA_MAVENCENTRAL_VERSION_FILE_NAME" | awk -F. '{print tolower($NF)}')
           if [[ $file_ext == "properties" ]]; then
             sed -i "s/${GHA_MAVENCENTRAL_VERSION_VARIABLE_NAME}=.*/${GHA_MAVENCENTRAL_VERSION_VARIABLE_NAME}=$VERSION/" ${GHA_MAVENCENTRAL_VERSION_FILE_NAME}
           elif [[ $file_ext == "xml" ]]; then

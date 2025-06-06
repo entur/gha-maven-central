@@ -74,11 +74,11 @@
               done
           }
 
-          file_ext=$(echo "GHA_MAVENCENTRAL_VERSION_FILE_NAME" | awk -F. '{print tolower($NF)}')
+          file_ext=$(echo "$GHA_MAVENCENTRAL_VERSION_FILE_NAME" | awk -F. '{print tolower($NF)}')
           if [[ $file_ext == "properties" ]]; then
-            previous_version=$(cat $GHA_MAVENCENTRAL_VERSION_FILE_NAME | grep "${GHA_MAVENCENTRAL_VERSION_VARIABLE_NAME}" | cut -d'=' -f2)
+            previous_version=$(cat $GHA_MAVENCENTRAL_VERSION_FILE_NAME | grep -w "$GHA_MAVENCENTRAL_VERSION_VARIABLE_NAME" | cut -d'=' -f2)
           elif [[ $file_ext == "xml" ]]; then
-            if test -f pom.xml; then
+            if test -f $GHA_MAVENCENTRAL_VERSION_FILE_NAME; then
               output=$(xmlpath "project/$GHA_MAVENCENTRAL_VERSION_VARIABLE_NAME" < $GHA_MAVENCENTRAL_VERSION_FILE_NAME)
               previous_version=${output#* }
 
