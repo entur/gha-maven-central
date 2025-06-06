@@ -42,7 +42,7 @@
         run: |
           # If next version is not defined, automatically increment the patch version,
           # or if defined, the commit message
-          if [ $GHA_MAVENCENTRAL_NEXT_VERSION = "" ]; then
+          if [ "$GHA_MAVENCENTRAL_NEXT_VERSION" = "" ]; then
             version_increment="patch"
             
             COMMIT_MESSAGE=$(git log --format="%B" -n 1)
@@ -76,7 +76,7 @@
             minor="$((minor + 1))"
             patch="0"
           elif [ "$version_increment" = "major" ]; then
-            MAJOR="$((major + 1))"
+            major="$((major + 1))"
             minor="0"
             patch="0"
           elif [ "$version_increment" = "patch" ]; then
@@ -88,7 +88,7 @@
               minor=${BASH_REMATCH[2]}
               patch=${BASH_REMATCH[3]}
             else
-              echo "Expected increment to be patch, minor, major or a static version, got $version_increment"
+              echo "Expected increment to be 'patch', 'minor', 'major' or a static version e.g. '1.0.0', got $version_increment"
               exit 1
             fi
           fi
@@ -135,9 +135,9 @@
           }
 
           file_ext=$(echo "$GHA_MAVENCENTRAL_VERSION_FILE_NAME" | awk -F. '{print tolower($NF)}')
-          if [[ $file_ext == "properties" ]]; then
+          if [ "$file_ext" = "properties" ]]; then
             sed -i "s/${GHA_MAVENCENTRAL_VERSION_VARIABLE_NAME}=.*/${GHA_MAVENCENTRAL_VERSION_VARIABLE_NAME}=$VERSION/" ${GHA_MAVENCENTRAL_VERSION_FILE_NAME}
-          elif [[ $file_ext == "xml" ]]; then
+          elif [ "$file_ext" = "xml" ]]; then
             if test -f $GHA_MAVENCENTRAL_VERSION_FILE_NAME; then
               output=$(xmlpath "project/$GHA_MAVENCENTRAL_VERSION_VARIABLE_NAME" < $GHA_MAVENCENTRAL_VERSION_FILE_NAME)
               previous_version=${output#* }
