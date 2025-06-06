@@ -141,7 +141,7 @@ jobs:
           fi
 
   update-gradle-publish-doc:
-    needs: [test-get-version]
+    needs: [test-get-version, test-update-version]
     uses: entur/gha-meta/.github/workflows/auto-doc.yml@v1.3.0
     with: 
       workflow_file: .github/workflows/gradle-publish.yml
