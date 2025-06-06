@@ -143,6 +143,7 @@
               previous_version_line=${output%"$previous_version"}
               tmp_file_name="$GHA_MAVENCENTRAL_VERSION_FILE_NAME.tmp"
 
+              # This should probably be made a bit more safe
               awk -v old="$previous_version" -v new="$VERSION" -v n="$previous_version_line" 'NR==n {sub(old,new)}1' "$GHA_MAVENCENTRAL_VERSION_FILE_NAME" > $tmp_file_name && mv $tmp_file_name "$GHA_MAVENCENTRAL_VERSION_FILE_NAME"
             fi
           else
@@ -153,7 +154,7 @@
           echo "Inserted new version $VERSION into file $GHA_MAVENCENTRAL_VERSION_FILE_NAME"
 
       - name: Push Version
-        if: ${{ inputs.push_to_repo == 'true'
+        if: ${{ inputs.push_to_repo == 'true' }}
         shell: bash
         env:
             GHA_MAVENCENTRAL_GITHUB_REF_NAME: ${{ github.ref }}
