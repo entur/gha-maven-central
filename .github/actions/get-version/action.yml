@@ -21,7 +21,7 @@
   
   outputs:
     version:
-      value: ${{ env.VERSION }}
+      value: ${{ steps.result.outputs.version }}
       description: "The current version of the artifact"
 
   runs:
@@ -113,3 +113,7 @@
 
           echo "Previous release version tag is: $previous_tag"
           echo "VERSION=$previous_version" >> $GITHUB_ENV
+
+      - id: result
+        shell: bash
+        run: echo "version=$VERSION" >> $GITHUB_OUTPUT
