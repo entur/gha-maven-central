@@ -1,6 +1,12 @@
 name: Gradle and Maven Publish Artifact
 description: Publishes a Gradle artifact to a Maven repository
 inputs:
+  version:
+    required: false
+    description: "Override the version of the artifact to publish, exported as an environment variable called VERSION and temporarily updates the gradle.properties version property"
+  publish_command:
+    default: "./gradlew"
+    description: "The named Gradle task to run for publishing the artifact"
   publish_task_name:
     default: "publish"
     description: "The named Gradle task to run for publishing the artifact"
@@ -10,13 +16,11 @@ inputs:
   publish_command_options:
     default: "--info"
     description: "If you want to use any options for the publish command, specify them here. E.g., '--info'"
-  version:
-    required: false
-    description: "Override the version of the artifact to publish, exported as an environment variable called VERSION and temporarily updates the gradle.properties version property"
   snapshot:
     required: false
     default: "false"
     description: "Whether the version is a snapshot version or not. if gradle, a gradle.properties file is expected and the version is specified without a -snapshot suffix"
+    
 runs:
     using: "composite"
     steps:
