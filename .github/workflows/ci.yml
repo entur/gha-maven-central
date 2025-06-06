@@ -1,0 +1,11 @@
+name: Entur/Maven-Central/CI
+
+on:
+    pull_request:
+
+jobs:
+    update-gradle-publish-doc:
+        uses: entur/gha-meta/.github/workflows/auto-doc.yml@v1.3.0
+        with: 
+            workflow_file: .github/workflows/gradle-publish-scan.yml
+            readme_file: README-gradle-publish.md

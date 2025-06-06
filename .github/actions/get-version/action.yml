@@ -1,17 +1,16 @@
   name: Get Artifact Version
   description: Get current artifact version from tag or file. Expects semver, e.g., 'version=1.0.2'
   inputs:
-    strategy:
+    version_strategy:
       description: 'Strategy to use for version extraction. Currently supports "file" or "tag".''
-      required: false
+      required: true
       default: 'file'
     # FILE STRATEGY
     version_file_name:
-      description: 'The name of the file containing the version number'
-      required: false
-      default: 'gradle.properties'
+      description: 'The name of the file containing the version number to get'
+      required: true
     version_variable_name:
-      description: 'The name of the variable containing the version number'
+      description: 'The name of the variable containing the version number to get'
       required: false
       default: 'version'
     # TAG STRATEGY
@@ -31,16 +30,16 @@
       - name: Verify inputs
         shell: bash
         env:
-          GHA_MAVENCENTRAL_STRATEGY: ${{ inputs.strategy }}
+          GHA_MAVENCENTRAL_VERSION_STRATEGY: ${{ inputs.version_strategy }}
         run: |
           valid_strategies=("file" "tag")
-          if [[ ! " ${valid_strategies[@]} " =~ " ${GHA_MAVENCENTRAL_STRATEGY} " ]]; then
-            echo "Invalid strategy: '${GHA_MAVENCENTRAL_STRATEGY}'. Must be one of: ${valid_strategies[*]}"
+          if [[ ! " ${valid_strategies[@]} " =~ " ${GHA_MAVENCENTRAL_VERSION_STRATEGY} " ]]; then
+            echo "Invalid strategy: '${GHA_MAVENCENTRAL_VERSION_STRATEGY}'. Must be one of: ${valid_strategies[*]}"
             exit 1
           fi
 
       - name: Get Version Number From File
-        if: ${{ version_strategy == 'file' }}
+        if: ${{ inputs.version_strategy == 'file' }}
         shell: bash
         env:
           GHA_MAVENCENTRAL_VERSION_FILE_NAME: ${{ inputs.version_file_name }}
@@ -98,7 +97,7 @@
           echo "VERSION=$previous_version" >> $GITHUB_ENV
       
       - name: Get Version Number From Tag
-        if: ${{ version_strategy == 'tag' }}
+        if: ${{ inputs.version_strategy == 'tag' }}
         shell: bash
         env:
           GHA_MAVENCENTRAL_TAG_PREFIX: ${{ inputs.version_tag_prefix }}
