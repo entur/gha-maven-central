@@ -26,13 +26,14 @@
   
   outputs:
     version:
-      value: ${{ env.VERSION }}
+      value: ${{ steps.result.outputs.version }}
       description: "The new version of the artifact"
 
   runs:
     using: "composite"
     steps:
       - name: Set New Version
+        id: result
         shell: bash
         env:
           GHA_MAVENCENTRAL_PREVIOUS_VERSION: ${{ inputs.previous_version }}
@@ -95,6 +96,7 @@
           new_version="$major.$minor.$patch$GHA_MAVENCENTRAL_NEXT_VERSION_SUFFIX"
           echo "Next version is $new_version"
           echo "VERSION=$new_version" >> $GITHUB_ENV
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
 
       - name: Insert New Version Into File
         shell: bash
