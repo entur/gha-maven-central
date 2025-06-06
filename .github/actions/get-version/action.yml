@@ -2,27 +2,27 @@
   description: Get current artifact version from tag or file. Expects semver, e.g., 'version=1.0.2'
   inputs:
     version_strategy:
-      description: 'Strategy to use for version extraction. Currently supports "file" or "tag".''
+      description: "Strategy to use for version extraction. Currently supports 'file' or 'tag'"
       required: true
-      default: 'file'
+      default: "file"
     # FILE STRATEGY
     version_file_name:
-      description: 'The name of the file containing the version number to get'
+      description: "The name of the file containing the version number to get"
       required: true
     version_variable_name:
-      description: 'The name of the variable containing the version number to get'
+      description: "The name of the variable containing the version number to get"
       required: false
-      default: 'version'
+      default: "version"
     # TAG STRATEGY
     version_tag_prefix:
-      description: 'The prefix of the tag containing the version number'
+      description: "The prefix of the tag containing the version number"
       required: false
-      default: 'v'
+      default: "v"
   
   outputs:
     version:
       value: ${{ env.VERSION }}
-      description: 'The current version of the artifact'
+      description: "The current version of the artifact"
 
   runs:
     using: "composite"

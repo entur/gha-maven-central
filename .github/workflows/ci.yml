@@ -1,11 +1,85 @@
 name: Entur/Maven-Central/CI
 
 on:
-    pull_request:
+  pull_request:
 
 jobs:
-    update-gradle-publish-doc:
-        uses: entur/gha-meta/.github/workflows/auto-doc.yml@v1.3.0
-        with: 
-            workflow_file: .github/workflows/gradle-publish-scan.yml
-            readme_file: README-gradle-publish.md
+  test-get-version:
+      runs-on: ubuntu-24.04
+      steps:
+        - uses: actions/checkout@v4
+          with:
+            persist-credentials: false
+
+        - id: get-version-gradle-good
+          uses: ./.github/actions/get-version
+          with:
+            version_strategy: "file"
+            version_file_name: "fixture/gradle.good.properties"
+
+        - name: Test Good gradle.properties file
+          shell: bash
+          env: 
+            GHA_MAVENCENTRAL_TEST_VERSION: ${{ steps.get-version-gradle-good.outputs.version }}
+          run: |
+            if [[ "$GHA_MAVENCENTRAL_TEST_VERSION" != "1.0.0" ]]; then
+                echo "Previous version $GHA_MAVENCENTRAL_TEST_VERSION not equal to 1.0.0"
+                exit 1
+            fi
+
+        - id: get-version-gradle-good-alt
+          uses: ./.github/actions/get-version
+          with:
+            version_strategy: "file"
+            version_file_name: "fixture/gradle.good.properties"
+            version_variable_name: "alt_version"
+
+        - name: Test Good gradle.properties with different version variable name
+          shell: bash
+          env: 
+            GHA_MAVENCENTRAL_TEST_VERSION: ${{ steps.get-version-gradle-good-alt.outputs.version }}
+          run: |
+            if [[ "$GHA_MAVENCENTRAL_TEST_VERSION" != "1.2.4" ]]; then
+                echo "Previous version $GHA_MAVENCENTRAL_TEST_VERSION not equal to 1.2.4"
+                exit 1
+            fi
+
+        - id: get-version-maven-good
+          uses: ./.github/actions/get-version
+          with:
+            version_strategy: "file"
+            version_file_name: "fixture/pom.good.xml"
+
+        - name: Test Good pom.xml file
+          shell: bash
+          env: 
+            GHA_MAVENCENTRAL_TEST_VERSION: ${{ steps.get-version-maven-good.outputs.version }}
+          run: |
+            if [[ "$GHA_MAVENCENTRAL_TEST_VERSION" != "1.50.3" ]]; then
+                echo "Previous version $GHA_MAVENCENTRAL_TEST_VERSION not equal to 1.50.3"
+                exit 1
+            fi
+
+        - id: get-version-maven-good-alt
+          uses: ./.github/actions/get-version
+          with:
+            version_strategy: "file"
+            version_file_name: "fixture/pom.good.xml"
+            version_variable_name: "modelVersion"
+
+        - name: Test Good pom.xml with different version variable name
+          shell: bash
+          env: 
+            GHA_MAVENCENTRAL_TEST_VERSION: ${{ steps.get-version-maven-good-alt.outputs.version }}
+          run: |
+            if [[ "$GHA_MAVENCENTRAL_TEST_VERSION" != "4.0.0" ]]; then
+                echo "Previous version $GHA_MAVENCENTRAL_TEST_VERSION not equal to 4.0.0"
+                exit 1
+            fi
+
+  update-gradle-publish-doc:
+    needs: [test-get-version]
+    uses: entur/gha-meta/.github/workflows/auto-doc.yml@v1.3.0
+    with: 
+      workflow_file: .github/workflows/gradle-publish.yml
+      readme_file: README-gradle-publish.md
