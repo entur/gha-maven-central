@@ -44,10 +44,10 @@
           # or if defined, the commit message
           if [ "$GHA_MAVENCENTRAL_NEXT_VERSION" = "" ]; then
             version_increment="patch"
+            commit_message=$(git log --format="%B" -n 1)
             
-            COMMIT_MESSAGE=$(git log --format="%B" -n 1)
-            if [[ $COMMIT_MESSAGE =~ \[ ]]; then
-              bracket_payloads=$(echo "$COMMIT_MESSAGE" | grep -Po "(?<=\[)[^\]]*(?=\])")
+            if [[ $commit_message =~ \[ ]]; then
+              bracket_payloads=$(echo "$commit_message" | grep -Po "(?<=\[)[^\]]*(?=\])")
               
               while IFS= read -r BRACKET_PAYLOAD; do
                 bracket_payload_trimmed=$(echo "$BRACKET_PAYLOAD" | tr -d '[:blank:]')
@@ -65,12 +65,15 @@
               done <<< "$bracket_payloads"
             fi
           else
-            version_increment=$GHA_MAVENCENTRAL_VERSION_INCREMENT
+            version_increment=$GHA_MAVENCENTRAL_NEXT_VERSION
           fi
 
-          major=$(echo "$GHA_MAVENCENTRAL_PREVIOUS_VERSION" | cut -d. -f1)
+          major="$(echo "$GHA_MAVENCENTRAL_PREVIOUS_VERSION" | cut -d. -f1)"
+          major=${major:-0}
           minor=$(echo "$GHA_MAVENCENTRAL_PREVIOUS_VERSION" | cut -d. -f2)
+          minor=${minor:-0}
           patch=$(echo "$GHA_MAVENCENTRAL_PREVIOUS_VERSION" | cut -d. -f3)
+          patch=${patch:-0}
 
           if [ "$version_increment" = "minor" ]; then
             minor="$((minor + 1))"
@@ -101,7 +104,6 @@
       - name: Insert New Version Into File
         shell: bash
         env:
-          GHA_MAVENCENTRAL_VERSION: ${{ env.version }}
           GHA_MAVENCENTRAL_VERSION_FILE_NAME: ${{ inputs.version_file_name }}
           GHA_MAVENCENTRAL_VERSION_VARIABLE_NAME: ${{ inputs.version_variable_name }}
         run: |
