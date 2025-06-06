@@ -1,5 +1,5 @@
   name: Increment Artifact Version
-  description: Update artifact previous_version by pushing bumping previous_version back to the repo. Expects semver, e.g., 'previous_version=1.0.2'
+  description: Increment the artifact version according to semver rules'
   inputs:
     previous_version:
       description: 'The previous (semver) previous_version of the artifact'
@@ -21,7 +21,7 @@
         shell: bash
         env:
           GHA_MAVENCENTRAL_PREVIOUS_VERSION: ${{ inputs.previous_version }}
-          GHA_MAVENCENTRAL_NEXT_VERSION: {{ inputs.next_version }}
+          GHA_MAVENCENTRAL_NEXT_VERSION: ${{ inputs.next_version }}
         run: |
           # If next version is not defined, automatically increment the patch version,
           # or if defined, the commit message
@@ -71,7 +71,7 @@
               minor=${BASH_REMATCH[2]}
               patch=${BASH_REMATCH[3]}
             else
-              echo "Expected increment patch, minor or major, got $version_increment"
+              echo "Expected increment to be patch, minor, major or a static version, got $version_increment"
               exit 1
             fi
           fi

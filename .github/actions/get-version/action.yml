@@ -1,4 +1,4 @@
-  name: Get Current Artifact Version
+  name: Get Artifact Version
   description: Get current artifact version from tag or file. Expects semver, e.g., 'version=1.0.2'
   inputs:
     strategy:

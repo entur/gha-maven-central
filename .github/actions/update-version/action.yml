@@ -1,5 +1,5 @@
   name: Update Artifact Version
-  description: Update artifact previous_version by pushing bumping previous_version back to the repo. Expects semver, e.g., 'previous_version=1.0.2'
+  description: Update artifact version files and (toggleable) pushes the changes back to the repo'
   inputs:
     version:
       required: required
@@ -11,6 +11,10 @@
       description: 'The name of the variable containing the version number'
       required: false
       default: 'version'
+    push-to-repo:
+      description: 'Whether to push the new version back to the repo'
+      required: false
+      default: 'true'
   
   outputs:
     version:
@@ -76,7 +80,7 @@
           echo "Inserted new version $GHA_MAVENCENTRAL_VERSION into file $GHA_MAVENCENTRAL_VERSION_FILE_NAME"
 
       - name: Push Version
-        if: ${{ inputs.push_to_repo == 'true' || inputs.push_to_tag == 'true' }}
+        if: ${{ inputs.push_to_repo == 'true'
         shell: bash
         env:
             GHA_MAVENCENTRAL_VERSION: ${{ inputs.version }}
