@@ -1,4 +1,4 @@
-name: Gradle Maven Publish Artifact
+name: Gradle and Maven Publish Artifact
 description: Publishes a Gradle artifact to a Maven repository
 inputs:
   publish_task_name:

@@ -1,10 +1,11 @@
   name: Get Current Artifact Version
   description: Get current artifact version from tag or file. Expects semver, e.g., 'version=1.0.2'
   inputs:
-    version_strategy:
-      description: 'Strategy to use for version extraction. Currently supports "file" or "tag".'
+    strategy:
+      description: 'Strategy to use for version extraction. Currently supports "file" or "tag".''
       required: false
       default: 'file'
+    # FILE STRATEGY
     version_file_name:
       description: 'The name of the file containing the version number'
       required: false
@@ -13,6 +14,7 @@
       description: 'The name of the variable containing the version number'
       required: false
       default: 'version'
+    # TAG STRATEGY
     version_tag_prefix:
       description: 'The prefix of the tag containing the version number'
       required: false
@@ -28,10 +30,12 @@
     steps:
       - name: Verify inputs
         shell: bash
+        env:
+          GHA_MAVENCENTRAL_STRATEGY: ${{ inputs.strategy }}
         run: |
-          VALID_STRATEGIES=("file" "tag")
-          if [[ ! " ${VALID_STRATEGIES[@]} " =~ " ${{ inputs.version_strategy }} " ]]; then
-            echo "Invalid version_strategy: '${{ inputs.version_strategy }}'. Must be one of: ${VALID_STRATEGIES[*]}"
+          valid_strategies=("file" "tag")
+          if [[ ! " ${valid_strategies[@]} " =~ " ${GHA_MAVENCENTRAL_STRATEGY} " ]]; then
+            echo "Invalid strategy: '${GHA_MAVENCENTRAL_STRATEGY}'. Must be one of: ${valid_strategies[*]}"
             exit 1
           fi
 
@@ -39,41 +43,74 @@
         if: ${{ version_strategy == 'file' }}
         shell: bash
         env:
-          GHA_VERSION_FILE_NAME: ${{ inputs.version_file_name }}
-          GHA_VERSION_VARIABLE_NAME: ${{ inputs.version_variable_name }}
+          GHA_MAVENCENTRAL_VERSION_FILE_NAME: ${{ inputs.version_file_name }}
+          GHA_MAVENCENTRAL_VERSION_VARIABLE_NAME: ${{ inputs.version_variable_name }}
         run: |
-          FILE_NAME= echo "$GHA_VERSION_FILE_NAME" | awk -F. '{print tolower($NF)}'
-          if [[ $FILE_NAME == "properties" ]]; then
-            PREVIOUS_VERSION=$(cat ${GHA_VERSION_FILE_NAME} | grep "${GHA_VERSION_VARIABLE_NAME}" | cut -d'=' -f2)
-          elif [[ $FILE_NAME == "xml" ]]; then
-            PREVIOUS_VERSION="1.0.0"
+          # Credit where credit is due
+          # https://unix.stackexchange.com/a/83481
+          function xmlpath()
+          {
+              local expr="${1//\// }"
+              local path=()
+              local chunk tag data
+              local line=1
+
+              while IFS='' read -r -d '<' chunk; do
+                  IFS='>' read -r tag data <<< "$chunk"
+                  
+                  tag=(${tag[0]})
+                  case "$tag" in
+                  '?'*) ;;
+                  '!–-'*) ;;
+                  '![CDATA['*) data="${tag:8:${#tag}-10}" ;;
+                  ?*'/') ;;
+                  '/'?*) line=$(($line - 1)) unset path[${#path[@]}-1] ;;
+                  ?*) line=$(($line + 1)) path+=("$tag") ;;
+                  esac
+
+                  if [[ "${path[@]}" == "$expr" ]]; then
+                      echo "$line $data"
+                      break
+                  fi
+              done
+          }
+
+          file_ext=$(echo "GHA_MAVENCENTRAL_VERSION_FILE_NAME" | awk -F. '{print tolower($NF)}')
+          if [[ $file_ext == "properties" ]]; then
+            previous_version=$(cat $GHA_MAVENCENTRAL_VERSION_FILE_NAME | grep "${GHA_MAVENCENTRAL_VERSION_VARIABLE_NAME}" | cut -d'=' -f2)
+          elif [[ $file_ext == "xml" ]]; then
+            if test -f pom.xml; then
+              output=$(xmlpath "project/$GHA_MAVENCENTRAL_VERSION_VARIABLE_NAME" < $GHA_MAVENCENTRAL_VERSION_FILE_NAME)
+              previous_version=${output#* }
+
+            fi
           else
             echo "Expected a version file to be a gradle .properties or pom .xml file for version extraction"
             exit 1
           fi
 
-          if [ "$PREVIOUS_VERSION" = "" ]; then
-            echo "Expected a preexisting version"
+          if [ "$previous_version" = "" ]; then
+            echo "Expected a pre-existing version"
             exit 1
           fi
 
-          echo "Previous release version is: $PREVIOUS_VERSION"
-          echo "VERSION=$PREVIOUS_VERSION" >> $GITHUB_ENV
+          echo "Previous release version is: $previous_version"
+          echo "VERSION=$previous_version" >> $GITHUB_ENV
       
       - name: Get Version Number From Tag
         if: ${{ version_strategy == 'tag' }}
         shell: bash
         env:
-          GHA_TAG_PREFIX: ${{ inputs.version_tag_prefix }}
+          GHA_MAVENCENTRAL_TAG_PREFIX: ${{ inputs.version_tag_prefix }}
         run: |
-          PREVIOUS_TAG=$(git tag -l --sort -version:refname "${GHA_TAG_PREFIX}*" | head -n 1)
+          previous_tag=$(git tag -l --sort -version:refname "${GHA_MAVENCENTRAL_TAG_PREFIX}*" | head -n 1)
           if [ "$PREVIOUS_TAG" = "" ]; then
-            echo "Expected a preexisting tag on the form '${GHA_TAG_PREFIX}x.y.z' for version extraction"
+            echo "Expected a pre-existing tag on the form '${GHA_MAVENCENTRAL_TAG_PREFIX}x.y.z' for version extraction"
             exit 1
           fi
           
-          REL_LEN=$(echo ${GHA_TAG_PREFIX} | wc -c | xargs)
-          PREVIOUS_VERSION=$(echo $PREVIOUS_TAG | cut -c ${REL_LEN}-)
+          rel_len=$(echo ${GHA_MAVENCENTRAL_TAG_PREFIX} | wc -c | xargs)
+          previous_version=$(echo $previous_tag | cut -c ${rel_len}-)
 
-          echo "Previous release version tag is: $PREVIOUS_TAG"
-          echo "VERSION=$releaseVersion" >> $GITHUB_ENV
+          echo "Previous release version tag is: $previous_tag"
+          echo "VERSION=$previous_version" >> $GITHUB_ENV
