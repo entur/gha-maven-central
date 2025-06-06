@@ -65,7 +65,7 @@
               done <<< "$bracket_payloads"
             fi
           else
-            version_increment=$GHA_MAVENCENTRAL_NEXT_VERSION
+            version_increment=$(echo $GHA_MAVENCENTRAL_NEXT_VERSION | xargs)
           fi
 
           major="$(echo "$GHA_MAVENCENTRAL_PREVIOUS_VERSION" | cut -d. -f1)"
@@ -85,7 +85,7 @@
           elif [ "$version_increment" = "patch" ]; then
             patch="$((patch + 1))"
           else 
-            semver_regex='^v?(0|[0-9]*)\.(0|0-9]*)\.(0|0-9]*)'
+            semver_regex='^v?(0|[0-9]*)\.(0|[0-9]*)\.(0|[0-9]*$)'
             if [[ "$version_increment" =~ $semver_regex ]]; then
               major=${BASH_REMATCH[1]}
               minor=${BASH_REMATCH[2]}
