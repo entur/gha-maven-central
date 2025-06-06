@@ -106,7 +106,7 @@ jobs:
           version_strategy: "file"
           version_file_name: "fixture/gradle.good.properties"
 
-      - name: Test gradle.properties auto update
+      - name: Test gradle.properties version auto update
         shell: bash
         env: 
           GHA_MAVENCENTRAL_TEST_VERSION: ${{ steps.get-version-auto-gradle-good.outputs.version }}
@@ -130,13 +130,38 @@ jobs:
           version_strategy: "file"
           version_file_name: "fixture/gradle.good.properties"
 
-      - name: Test gradle.properties increment update
+      - name: Test gradle.properties version increment update
         shell: bash
         env: 
           GHA_MAVENCENTRAL_TEST_VERSION: ${{ steps.get-version-increment-gradle-good.outputs.version }}
         run: |
-          if [[ "$GHA_MAVENCENTRAL_TEST_VERSION" != "1.1.1" ]]; then
-              echo "Previous version $GHA_MAVENCENTRAL_TEST_VERSION not equal to 1.1.1"
+          if [[ "$GHA_MAVENCENTRAL_TEST_VERSION" != "1.1.0" ]]; then
+              echo "Previous version $GHA_MAVENCENTRAL_TEST_VERSION not equal to 1.1.0"
+              exit 1
+          fi
+
+      - id: update-version-static-gradle-good
+        uses: ./.github/actions/update-version
+        with:
+          version_file_name: "fixture/gradle.good.properties"
+          previous_version: ${{ steps.update-version-increment-gradle-good.outputs.version }}
+          next_version: "minor"
+          push_to_repo: false
+
+      - id: get-version-static-gradle-good
+        uses: ./.github/actions/get-version
+        with:
+          version_strategy: "file"
+          next_version: "2.3.5"
+          version_file_name: "fixture/gradle.good.properties"
+
+      - name: Test gradle.properties static version update
+        shell: bash
+        env: 
+          GHA_MAVENCENTRAL_TEST_VERSION: ${{ steps.get-version-static-gradle-good.outputs.version }}
+        run: |
+          if [[ "$GHA_MAVENCENTRAL_TEST_VERSION" != "2.3.5" ]]; then
+              echo "Previous version $GHA_MAVENCENTRAL_TEST_VERSION not equal to 2.3.5"
               exit 1
           fi
 
