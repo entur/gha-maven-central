@@ -145,14 +145,13 @@ jobs:
         with:
           version_file_name: "fixture/gradle.good.properties"
           previous_version: ${{ steps.update-version-increment-gradle-good.outputs.version }}
-          next_version: "minor"
+          next_version: "2.3.5"
           push_to_repo: false
 
       - id: get-version-static-gradle-good
         uses: ./.github/actions/get-version
         with:
           version_strategy: "file"
-          next_version: "2.3.5"
           version_file_name: "fixture/gradle.good.properties"
 
       - name: Test gradle.properties static version update
