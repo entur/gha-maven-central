@@ -2,11 +2,13 @@
   description: Update artifact version files and (enabled by default) pushes the changes back to the repo
   inputs:
     version:
-      description: "The next (semver) version of the artifact.
+      description: "The next (semver) version of the artifact.default:
       required: true
+      type: string
     version_file_name:
       description: "The name of the file containing the version number to update"
       required: true
+      type: string
     version_variable_name:
       description: "The name of the variable containing the version number to update"
       required: false
