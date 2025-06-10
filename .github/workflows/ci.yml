@@ -97,7 +97,7 @@ jobs:
         uses: ./.github/actions/increment-version
         with:
           version_file_name: "fixture/gradle.good.properties"
-          previous_version: ${{ steps.get-version-gradle-good.outputs.version }}
+          version_previous: ${{ steps.get-version-gradle-good.outputs.version }}
           push_to_repo: false
 
       - name: Test gradle.properties auto increment version
@@ -114,8 +114,8 @@ jobs:
         uses: ./.github/actions/increment-version
         with:
           version_file_name: "fixture/gradle.good.properties"
-          previous_version: ${{ steps.increment-version-auto-gradle-good.outputs.version }}
-          version_next: "1.1.0"
+          version_previous: ${{ steps.increment-version-auto-gradle-good.outputs.version }}
+          version_next: "minor"
           push_to_repo: false
 
       - name: Test gradle.properties increment version
@@ -132,7 +132,7 @@ jobs:
         uses: ./.github/actions/increment-version
         with:
           version_file_name: "fixture/gradle.good.properties"
-          previous_version: ${{ steps.increment-version-increment-gradle-good.outputs.version }}
+          version_previous: ${{ steps.increment-version-increment-gradle-good.outputs.version }}
           version_next: "2.3.5"
           push_to_repo: false
 
@@ -140,6 +140,65 @@ jobs:
         shell: bash
         env: 
           GHA_MAVENCENTRAL_TEST_VERSION: ${{ steps.increment-version-static-gradle-good.outputs.version }}
+        run: |
+          if [[ "$GHA_MAVENCENTRAL_TEST_VERSION" != "2.3.5" ]]; then
+            echo "Previous version $GHA_MAVENCENTRAL_TEST_VERSION not equal to 2.3.5"
+            exit 1
+          fi
+
+      - id: get-version-maven-good
+        uses: ./.github/actions/get-version
+        with:
+          version_strategy: "file"
+          version_file_name: "fixture/pom.good.xml"
+
+      - id: increment-version-auto-maven-good
+        uses: ./.github/actions/increment-version
+        with:
+          version_file_name: "fixture/pom.good.xml"
+          version_previous: ${{ steps.get-version-maven-good.outputs.version }}
+          push_to_repo: false
+
+      - name: Test pom.xml auto increment version
+        shell: bash
+        env: 
+          GHA_MAVENCENTRAL_TEST_VERSION: ${{ steps.increment-version-auto-maven-good.outputs.version }}
+        run: |
+          if [[ "$GHA_MAVENCENTRAL_TEST_VERSION" != "1.50.4" ]]; then
+            echo "Previous version $GHA_MAVENCENTRAL_TEST_VERSION not equal to 1.50.4"
+            exit 1
+          fi
+    
+      - id: increment-version-increment-maven-good
+        uses: ./.github/actions/increment-version
+        with:
+          version_file_name: "fixture/pom.good.properties"
+          version_previous: ${{ steps.increment-version-auto-maven-good.outputs.version }}
+          version_next: "minor"
+          push_to_repo: false
+
+      - name: Test pom.xml increment version
+        shell: bash
+        env: 
+          GHA_MAVENCENTRAL_TEST_VERSION: ${{ steps.increment-version-increment-maven-good.outputs.version }}
+        run: |
+          if [[ "$GHA_MAVENCENTRAL_TEST_VERSION" != "1.51.0" ]]; then
+            echo "Previous version $GHA_MAVENCENTRAL_TEST_VERSION not equal to 1.51.0"
+            exit 1
+          fi
+
+      - id: increment-version-static-maven-good
+        uses: ./.github/actions/increment-version
+        with:
+          version_file_name: "fixture/pom.good.xml"
+          version_previous: ${{ steps.increment-version-increment-maven-good.outputs.version }}
+          version_next: "2.3.5"
+          push_to_repo: false
+
+      - name: Test pom.xml static version
+        shell: bash
+        env: 
+          GHA_MAVENCENTRAL_TEST_VERSION: ${{ steps.increment-version-static-maven-good.outputs.version }}
         run: |
           if [[ "$GHA_MAVENCENTRAL_TEST_VERSION" != "2.3.5" ]]; then
             echo "Previous version $GHA_MAVENCENTRAL_TEST_VERSION not equal to 2.3.5"
@@ -163,7 +222,7 @@ jobs:
         uses: ./.github/actions/update-version
         with:
           version_file_name: "fixture/gradle.good.properties"
-          previous_version: ${{ steps.get-version-gradle-good.outputs.version }}
+          version_previous: ${{ steps.get-version-gradle-good.outputs.version }}
           push_to_repo: false
 
       - id: get-version-final-gradle-good
@@ -177,6 +236,36 @@ jobs:
         env: 
           GHA_MAVENCENTRAL_TEST_VERSION: ${{ steps.get-version-gradle-good.outputs.version }}
           GHA_MAVENCENTRAL_TEST_VERSION_FINAL: ${{ steps.get-version-final-gradle-good.outputs.version }}
+        run: |
+          if [[ "$GHA_MAVENCENTRAL_TEST_VERSION" != "$GHA_MAVENCENTRAL_TEST_VERSION_FINAL" ]]; then
+            echo "Previous version $GHA_MAVENCENTRAL_TEST_VERSION not equal to $GHA_MAVENCENTRAL_TEST_VERSION_FINAL"
+            exit 1
+          fi
+
+      - id: get-version-maven-good
+        uses: ./.github/actions/get-version
+        with:
+          version_strategy: "file"
+          version_file_name: "fixture/maven.good.xml"
+
+      - id: update-version-maven-good
+        uses: ./.github/actions/update-version
+        with:
+          version_file_name: "fixture/maven.good.xml"
+          version_previous: ${{ steps.get-version-maven-good.outputs.version }}
+          push_to_repo: false
+
+      - id: get-version-final-maven-good
+        uses: ./.github/actions/get-version
+        with:
+          version_strategy: "file"
+          version_file_name: "fixture/maven.good.properties"
+
+      - name: Test pom.xml update version
+        shell: bash
+        env: 
+          GHA_MAVENCENTRAL_TEST_VERSION: ${{ steps.get-version-maven-good.outputs.version }}
+          GHA_MAVENCENTRAL_TEST_VERSION_FINAL: ${{ steps.get-version-final-maven-good.outputs.version }}
         run: |
           if [[ "$GHA_MAVENCENTRAL_TEST_VERSION" != "$GHA_MAVENCENTRAL_TEST_VERSION_FINAL" ]]; then
             echo "Previous version $GHA_MAVENCENTRAL_TEST_VERSION not equal to $GHA_MAVENCENTRAL_TEST_VERSION_FINAL"
