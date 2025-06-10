@@ -26,6 +26,7 @@
     using: "composite"
     steps:
       - name: Insert New Version Into File
+        id: result
         shell: bash
         env:
           GHA_MAVENCENTRAL_VERSION: ${{ inputs.version }}
@@ -80,6 +81,8 @@
           fi
 
           echo "Inserted new version $GHA_MAVENCENTRAL_VERSION into file $GHA_MAVENCENTRAL_VERSION_FILE_NAME"
+          echo "VERSION=$GHA_MAVENCENTRAL_VERSION" >> $GITHUB_ENV
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
 
       - name: Push Version
         if: ${{ inputs.push_to_repo == 'true' }}

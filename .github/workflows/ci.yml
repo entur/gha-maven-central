@@ -11,6 +11,8 @@ jobs:
           with:
             persist-credentials: false
 
+        # GRADLE
+
         - id: get-version-gradle-good
           uses: ./.github/actions/get-version
           with:
@@ -43,6 +45,8 @@ jobs:
               echo "Previous version $GHA_MAVENCENTRAL_TEST_VERSION not equal to 1.2.4"
               exit 1
             fi
+
+        # MAVEN
 
         - id: get-version-maven-good
           uses: ./.github/actions/get-version
@@ -77,9 +81,6 @@ jobs:
               exit 1
             fi
 
-        # TODO:
-        # We need to add tests for tag based version fetching
-
   test-increment-version:
     runs-on: ubuntu-24.04
     steps:
@@ -87,6 +88,8 @@ jobs:
         with:
           persist-credentials: false
 
+      # GRADLE
+      
       - id: get-version-gradle-good
         uses: ./.github/actions/get-version
         with:
@@ -146,6 +149,8 @@ jobs:
             exit 1
           fi
 
+      # MAVEN
+
       - id: get-version-maven-good
         uses: ./.github/actions/get-version
         with:
@@ -172,7 +177,7 @@ jobs:
       - id: increment-version-increment-maven-good
         uses: ./.github/actions/increment-version
         with:
-          version_file_name: "fixture/pom.good.properties"
+          version_file_name: "fixture/pom.good.xml"
           version_previous: ${{ steps.increment-version-auto-maven-good.outputs.version }}
           version_next: "minor"
           push_to_repo: false
@@ -212,6 +217,8 @@ jobs:
         with:
           persist-credentials: false
 
+      # GRADLE
+
       - id: get-version-gradle-good
         uses: ./.github/actions/get-version
         with:
@@ -241,6 +248,8 @@ jobs:
             echo "Previous version $GHA_MAVENCENTRAL_TEST_VERSION not equal to $GHA_MAVENCENTRAL_TEST_VERSION_FINAL"
             exit 1
           fi
+
+      # MAVEN
 
       - id: get-version-maven-good
         uses: ./.github/actions/get-version
