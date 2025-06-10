@@ -243,20 +243,20 @@ jobs:
         uses: ./.github/actions/get-version
         with:
           version_strategy: "file"
-          version_file_name: "fixture/maven.good.xml"
+          version_file_name: "fixture/pom.good.xml"
 
       - id: update-version-maven-good
         uses: ./.github/actions/update-version
         with:
           version: ${{ steps.get-version-maven-good.outputs.version }}
-          version_file_name: "fixture/maven.good.xml"
+          version_file_name: "fixture/pom.good.xml"
           push_to_repo: false
 
       - id: get-version-final-maven-good
         uses: ./.github/actions/get-version
         with:
           version_strategy: "file"
-          version_file_name: "fixture/maven.good.properties"
+          version_file_name: "fixture/pom.good.xml"
 
       - name: Test pom.xml update version
         shell: bash

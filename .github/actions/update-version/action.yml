@@ -11,7 +11,6 @@
       description: "The name of the variable containing the version number to update"
       required: false
       default: "version"
-      default: ""
     push_to_repo:
       description: "Whether to push the new version back to the repo"
       required: false
