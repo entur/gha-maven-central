@@ -68,6 +68,7 @@ on:
         required: true
       SONATYPE_GPG_KEY_PASSWORD:
         required: true
+        
     outputs:
       version:
         description: Published version
@@ -80,6 +81,8 @@ jobs:
       contents: write
       issues: write
       packages: write
+    outputs:
+      version: ${{ steps.publish.outputs.version }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -121,6 +124,7 @@ jobs:
 
       - id: update-version
         uses: ./.github/actions/update-version
+        if: ${{ steps.get-version.outputs.version != steps.increment-version.outputs.version }}
         with:
           version: ${{ steps.increment-version.outputs.version }}
           version_file_name: ${{ inputs.version_file_name }}
