@@ -3,7 +3,7 @@
   inputs:
     version:
       description: "The next (semver) version of the artifact.
-      required: trye
+      required: true
     version_file_name:
       description: "The name of the file containing the version number to update"
       required: true
@@ -20,7 +20,7 @@
   outputs:
     version:
       value: ${{ steps.result.outputs.version }}
-      description: "The version of the artifact"
+      description: "The updated version of the artifact"
 
   runs:
     using: "composite"
