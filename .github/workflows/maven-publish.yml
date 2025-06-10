@@ -105,14 +105,14 @@ jobs:
           distribution: ${{ inputs.java_distribution }}
 
       - id: get-version
-        uses: ./.github/actions/get-version
+        uses: entur/gha-maven-central/.github/actions/get-version@feat/brand-new
         with:
           version_strategy: ${{ inputs.version_strategy }}
           version_file_name: ${{ inputs.version_file_name }}
           version_tag_prefix: ${{ inputs.version_tag_prefix }}
 
       - id: increment-version
-        uses: ./.github/actions/increment-version
+        uses: entur/gha-maven-central/.github/actions/increment-version@feat/brand-new
         with:
           previous_version: ${{ steps.get-version.outputs.version }}
           next_version: ${{ inputs.next_version }}
@@ -127,7 +127,7 @@ jobs:
             mvn clean
 
       - id: update-version
-        uses: ./.github/actions/update-version
+        uses: entur/gha-maven-central/.github/actions/update-version@feat/brand-new
         if: ${{ steps.get-version.outputs.version != steps.increment-version.outputs.version }}
         with:
           version: ${{ steps.increment-version.outputs.version }}
