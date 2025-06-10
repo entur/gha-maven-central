@@ -88,4 +88,4 @@
           new_version="$major.$minor.$patch$GHA_MAVENCENTRAL_VERSION_NEXT_SUFFIX"
           echo "Next version is $new_version"
           echo "VERSION=$new_version" >> $GITHUB_ENV
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "version=$new_version" >> $GITHUB_OUTPUT

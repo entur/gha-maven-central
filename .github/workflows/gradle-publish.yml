@@ -1,5 +1,5 @@
-name: Release to Maven Central
-description: "Publish release artifact to Maven Central for a Gradle library project. Increments the version based on the latest release tag. The project must propagate the command-line 'version' property to artifact version in the Gradle publishing configuration."
+name: Release to Maven Central (Gradle)
+description: "Publish release artifact to Maven Central for a Gradle library project. Increments the version based on the latest release tag."
 on:
   workflow_call:
     inputs:

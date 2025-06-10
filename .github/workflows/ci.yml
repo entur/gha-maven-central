@@ -216,8 +216,8 @@ jobs:
       - id: update-version-gradle-good
         uses: ./.github/actions/update-version
         with:
+          version: ${{ steps.get-version-gradle-good.outputs.version }}
           version_file_name: "fixture/gradle.good.properties"
-          version_previous: ${{ steps.get-version-gradle-good.outputs.version }}
           push_to_repo: false
 
       - id: get-version-final-gradle-good
@@ -248,8 +248,8 @@ jobs:
       - id: update-version-maven-good
         uses: ./.github/actions/update-version
         with:
+          version: ${{ steps.get-version-maven-good.outputs.version }}
           version_file_name: "fixture/maven.good.xml"
-          version_previous: ${{ steps.get-version-maven-good.outputs.version }}
           push_to_repo: false
 
       - id: get-version-final-maven-good
