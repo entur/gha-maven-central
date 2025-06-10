@@ -137,6 +137,7 @@ jobs:
       - name: Generate JReleaser Maven Central Config
         shell: bash
         env:
+          GHA_MAVENCENTRAL_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GHA_MAVENCENTRAL_SONATYPE_USERNAME: ${{ secrets.SONATYPE_AUTH_USER }}
           GHA_MAVENCENTRAL_SONATYPE_PASSWORD: ${{ secrets.SONATYPE_AUTH_TOKEN }}
           GHA_MAVENCENTRAL_GPG_PUBLIC_KEY: ${{ secrets.SONATYPE_GPG_KEY_PUBLIC }}
@@ -145,6 +146,7 @@ jobs:
         run: |
           mkdir -p $HOME/.jreleaser
           cat << EOF >>$HOME/.jreleaser/config.toml
+          JRELEASER_GITHUB_TOKEN="$GHA_MAVENCENTRAL_GITHUB_TOKEN"
           JRELEASER_MAVENCENTRAL_USERNAME="$GHA_MAVENCENTRAL_SONATYPE_USERNAME"
           JRELEASER_MAVENCENTRAL_PASSWORD="$GHA_MAVENCENTRAL_SONATYPE_PASSWORD"
           JRELEASER_GPG_PASSPHRASE="$GHA_MAVENCENTRAL_GPG_PASSPHRASE"
