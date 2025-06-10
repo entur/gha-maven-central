@@ -91,8 +91,8 @@ jobs:
       - id: increment-version-noop-good
         uses: ./.github/actions/increment-version
         with:
-          version_previous: "1.0.0"
-          version_next: ""
+          previous_version: "1.0.0"
+          next_version: ""
 
       - name: Test noop increment version
         shell: bash
@@ -107,7 +107,7 @@ jobs:
       - id: increment-version-auto-good
         uses: ./.github/actions/increment-version
         with:
-          version_previous: "1.0.0"
+          previous_version: "1.0.0"
 
       - name: Test auto increment version
         shell: bash
@@ -122,8 +122,8 @@ jobs:
       - id: increment-version-normal-good
         uses: ./.github/actions/increment-version
         with:
-          version_previous: ${{ steps.increment-version-auto-good.outputs.version }}
-          version_next: "minor"
+          previous_version: ${{ steps.increment-version-auto-good.outputs.version }}
+          next_version: "minor"
 
       - name: Test normal increment version
         shell: bash
@@ -138,8 +138,8 @@ jobs:
       - id: increment-version-static-good
         uses: ./.github/actions/increment-version
         with:
-          version_previous: ${{ steps.increment-version-normal-good.outputs.version }}
-          version_next: "2.3.5"
+          previous_version: ${{ steps.increment-version-normal-good.outputs.version }}
+          next_version: "2.3.5"
 
       - name: Test static version
         shell: bash

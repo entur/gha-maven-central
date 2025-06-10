@@ -15,7 +15,7 @@ inputs:
     default: "version"
   # TAG STRATEGY
   version_tag_prefix:
-    description: "The prefix of the tag containing the version number"
+    description: "The prefix of the tag containing the version number to get"
     required: false
     default: "v"
 
