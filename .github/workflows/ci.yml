@@ -99,9 +99,7 @@ jobs:
       - id: increment-version-auto-gradle-good
         uses: ./.github/actions/increment-version
         with:
-          version_file_name: "fixture/gradle.good.properties"
           version_previous: ${{ steps.get-version-gradle-good.outputs.version }}
-          push_to_repo: false
 
       - name: Test gradle.properties auto increment version
         shell: bash
@@ -116,10 +114,8 @@ jobs:
       - id: increment-version-increment-gradle-good
         uses: ./.github/actions/increment-version
         with:
-          version_file_name: "fixture/gradle.good.properties"
           version_previous: ${{ steps.increment-version-auto-gradle-good.outputs.version }}
           version_next: "minor"
-          push_to_repo: false
 
       - name: Test gradle.properties increment version
         shell: bash
@@ -134,10 +130,8 @@ jobs:
       - id: increment-version-static-gradle-good
         uses: ./.github/actions/increment-version
         with:
-          version_file_name: "fixture/gradle.good.properties"
           version_previous: ${{ steps.increment-version-increment-gradle-good.outputs.version }}
           version_next: "2.3.5"
-          push_to_repo: false
 
       - name: Test gradle.properties static version
         shell: bash
@@ -160,9 +154,7 @@ jobs:
       - id: increment-version-auto-maven-good
         uses: ./.github/actions/increment-version
         with:
-          version_file_name: "fixture/pom.good.xml"
           version_previous: ${{ steps.get-version-maven-good.outputs.version }}
-          push_to_repo: false
 
       - name: Test pom.xml auto increment version
         shell: bash
@@ -177,10 +169,8 @@ jobs:
       - id: increment-version-increment-maven-good
         uses: ./.github/actions/increment-version
         with:
-          version_file_name: "fixture/pom.good.xml"
           version_previous: ${{ steps.increment-version-auto-maven-good.outputs.version }}
           version_next: "minor"
-          push_to_repo: false
 
       - name: Test pom.xml increment version
         shell: bash
@@ -195,10 +185,8 @@ jobs:
       - id: increment-version-static-maven-good
         uses: ./.github/actions/increment-version
         with:
-          version_file_name: "fixture/pom.good.xml"
           version_previous: ${{ steps.increment-version-increment-maven-good.outputs.version }}
           version_next: "2.3.5"
-          push_to_repo: false
 
       - name: Test pom.xml static version
         shell: bash
