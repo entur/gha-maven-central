@@ -1,5 +1,5 @@
-name: Release to Maven Central (Gradle)
-description: "Publish release artifact to Maven Central for a Gradle library project. Increments the version based on the latest release tag."
+name: Release to Maven Central (Maven)
+description: "Publish release artifact to Maven Central for a Maven library project. Increments the version based on the latest release tag."
 on:
   workflow_call:
     inputs:
@@ -28,12 +28,7 @@ on:
         description: 'The name of the file containing the version number'
         required: false
         type: string
-        default: 'gradle.properties'
-      version_variable_name:
-        description: 'The name of the variable containing the version number'
-        required: false
-        type: string
-        default: 'version'
+        default: 'pom.xml'
       version_tag_prefix:
         description: 'The prefix of the tag containing the version number'
         required: false
@@ -55,12 +50,10 @@ on:
         required: false
         type: boolean
         default: true
-      # BUILD ARGUMENTS
-
     secrets:
-      JRELEASER_MAVENCENTRAL_USERNAME:
+      SONATYPE_AUTH_USER:
         required: true
-      JRELEASER_MAVENCENTRAL_PASSWORD:
+      SONATYPE_AUTH_TOKEN:
         required: true
       SONATYPE_GPG_KEY_PUBLIC:
         required: true
@@ -91,16 +84,12 @@ jobs:
         with:
           java-version: ${{ inputs.java_version }}
           distribution: ${{ inputs.java_distribution }}
-    
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
 
       - id: get-version
         uses: ./.github/actions/get-version
         with:
           version_strategy: ${{ inputs.version_strategy }}
           version_file_name: ${{ inputs.version_file_name }}
-          version_variable_name: ${{ inputs.version_variable_name }}
           version_tag_prefix: ${{ inputs.version_tag_prefix }}
 
       - id: increment-version
@@ -113,18 +102,16 @@ jobs:
       - name: Verify JReleaser Config
         shell: bash
         env:
-          GHA_MAVENCENTRAL_VERSION_VARIABLE_NAME: ${{ inputs.version_variable_name }}
           GHA_MAVENCENTRAL_VERSION: ${{ steps.increment-version.outputs.version }}
         run: |
-          ./gradlew -Pversion=$GHA_MAVENCENTRAL_VERSION -P$GHA_MAVENCENTRAL_VERSION_VARIABLE_NAME=$GHA_MAVENCENTRAL_VERSION jreleaserConfig
-          ./gradlew -Pversion=$GHA_MAVENCENTRAL_VERSION -P$GHA_MAVENCENTRAL_VERSION_VARIABLE_NAME=$GHA_MAVENCENTRAL_VERSION clean
+            mvn -B versions:set -DnewVersion=$GHA_MAVENCENTRAL_VERSION jreleaser:config
+            mvn clean
 
       - id: update-version
         uses: ./.github/actions/update-version
         with:
           version: ${{ steps.increment-version.outputs.version }}
           version_file_name: ${{ inputs.version_file_name }}
-          version_variable_name: ${{ inputs.version_variable_name }}
           push_to_repo: ${{ inputs.push_to_repo }}
     
       - name: Generate JReleaser Maven Central Config
@@ -149,11 +136,11 @@ jobs:
         id: publish
         shell: bash
         env:
-          GHA_MAVENCENTRAL_VERSION_VARIABLE_NAME: ${{ inputs.version_variable_name }}
           GHA_MAVENCENTRAL_VERSION: ${{ steps.update-version.outputs.version }}
         run: |
-          ./gradlew -Pversion=$GHA_MAVENCENTRAL_VERSION -P$GHA_MAVENCENTRAL_VERSION_VARIABLE_NAME=$GHA_MAVENCENTRAL_VERSION publish
-          ./gradlew -Pversion=$GHA_MAVENCENTRAL_VERSION -P$GHA_MAVENCENTRAL_VERSION_VARIABLE_NAME=$GHA_MAVENCENTRAL_VERSION jreleaserFullRelease
+
+          mvn -B versions:set -DnewVersion=$GHA_MAVENCENTRAL_VERSION -Ppublication
+          mvn -B versions:set -DnewVersion=$GHA_MAVENCENTRAL_VERSION jreleaser:full-release
           
           echo ":tada: Published $GHA_MAVENCENTRAL_VERSION to Maven Central." >> $GITHUB_STEP_SUMMARY
           echo "version=$GHA_MAVENCENTRAL_VERSION" >> $GITHUB_OUTPUT
