@@ -57,9 +57,9 @@ on:
         default: true
 
     secrets:
-      JRELEASER_MAVENCENTRAL_USERNAME:
+      SONATYPE_AUTH_USER:
         required: true
-      JRELEASER_MAVENCENTRAL_PASSWORD:
+      SONATYPE_AUTH_TOKEN:
         required: true
       SONATYPE_GPG_KEY_PUBLIC:
         required: true
@@ -133,8 +133,8 @@ jobs:
       - name: Generate JReleaser Maven Central Config
         shell: bash
         env:
-          GHA_MAVENCENTRAL_SONATYPE_USERNAME: ${{ secrets.JRELEASER_MAVENCENTRAL_USERNAME }}
-          GHA_MAVENCENTRAL_SONATYPE_PASSWORD: ${{ secrets.JRELEASER_MAVENCENTRAL_PASSWORD }}
+          GHA_MAVENCENTRAL_SONATYPE_USERNAME: ${{ secrets.SONATYPE_AUTH_USER }}
+          GHA_MAVENCENTRAL_SONATYPE_PASSWORD: ${{ secrets.SONATYPE_AUTH_TOKEN }}
           GHA_MAVENCENTRAL_GPG_PUBLIC_KEY: ${{ secrets.SONATYPE_GPG_KEY_PUBLIC }}
           GHA_MAVENCENTRAL_GPG_SECRET_KEY: ${{ secrets.SONATYPE_GPG_KEY }}
           GHA_MAVENCENTRAL_GPG_PASSPHRASE: ${{ secrets.SONATYPE_GPG_KEY_PASSWORD }}
