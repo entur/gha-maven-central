@@ -1,6 +1,9 @@
   name: Update Artifact Version
   description: Update artifact version files and (enabled by default) pushes the changes back to the repo
   inputs:
+    version:
+      description: "The next (semver) version of the artifact.
+      required: trye
     version_file_name:
       description: "The name of the file containing the version number to update"
       required: true
@@ -8,16 +11,6 @@
       description: "The name of the variable containing the version number to update"
       required: false
       default: "version"
-    previous_version:
-      description: "The previous (semver) previous_version of the artifact"
-      required: true
-    next_version:
-      description: "The next (semver) version of the artifact. Increments can be automatically detected ('') from the commit message, partially incremented using ('major', 'minor', 'patch'), or be forcefully defined (e.g. '1.3.0')"
-      required: false
-      default: "" # auto (''), major, minor, patch or a semver version
-    next_version_suffix:
-      description: "The next version of the artifact's suffix. Usual values would be -snapshot or -prerelease"
-      required: false
       default: ""
     push_to_repo:
       description: "Whether to push the new version back to the repo"
@@ -27,83 +20,15 @@
   outputs:
     version:
       value: ${{ steps.result.outputs.version }}
-      description: "The new version of the artifact"
+      description: "The version of the artifact"
 
   runs:
     using: "composite"
     steps:
-      - name: Set New Version
-        id: result
-        shell: bash
-        env:
-          GHA_MAVENCENTRAL_PREVIOUS_VERSION: ${{ inputs.previous_version }}
-          GHA_MAVENCENTRAL_NEXT_VERSION: ${{ inputs.next_version }}
-          GHA_MAVENCENTRAL_NEXT_VERSION_SUFFIX: ${{ inputs.next_version_suffix }}
-        run: |
-          # If next version is not defined, automatically increment the patch version,
-          # or if defined, the commit message
-          if [ "$GHA_MAVENCENTRAL_NEXT_VERSION" = "" ]; then
-            version_increment="patch"
-            commit_message=$(git log --format="%B" -n 1)
-            
-            if [[ $commit_message =~ \[ ]]; then
-              bracket_payloads=$(echo "$commit_message" | grep -Po "(?<=\[)[^\]]*(?=\])")
-              
-              while IFS= read -r BRACKET_PAYLOAD; do
-                bracket_payload_trimmed=$(echo "$BRACKET_PAYLOAD" | tr -d '[:blank:]')
-                bracket_payload_trimmed_lowercase=$(tr '[:upper:]' '[:lower:]' <<<"$bracket_payload_trimmed" )
-                
-                # detect type      
-                if [ "$bracket_payload_trimmed_lowercase" = "minor" ]; then
-                  version_increment="minor"
-                elif [ "$bracket_payload_trimmed_lowercase" = "major" ]; then
-                  version_increment="major"
-                elif [ "$bracket_payload_trimmed_lowercase" = "patch" ]; then
-                  version_increment="patch"
-                fi
-
-              done <<< "$bracket_payloads"
-            fi
-          else
-            version_increment=$(echo $GHA_MAVENCENTRAL_NEXT_VERSION | xargs)
-          fi
-
-          major="$(echo "$GHA_MAVENCENTRAL_PREVIOUS_VERSION" | cut -d. -f1)"
-          major=${major:-0}
-          minor=$(echo "$GHA_MAVENCENTRAL_PREVIOUS_VERSION" | cut -d. -f2)
-          minor=${minor:-0}
-          patch=$(echo "$GHA_MAVENCENTRAL_PREVIOUS_VERSION" | cut -d. -f3)
-          patch=${patch:-0}
-
-          if [ "$version_increment" = "minor" ]; then
-            minor="$((minor + 1))"
-            patch="0"
-          elif [ "$version_increment" = "major" ]; then
-            major="$((major + 1))"
-            minor="0"
-            patch="0"
-          elif [ "$version_increment" = "patch" ]; then
-            patch="$((patch + 1))"
-          else 
-            semver_regex='^v?(0|[0-9]*)\.(0|[0-9]*)\.(0|[0-9]*$)'
-            if [[ "$version_increment" =~ $semver_regex ]]; then
-              major=${BASH_REMATCH[1]}
-              minor=${BASH_REMATCH[2]}
-              patch=${BASH_REMATCH[3]}
-            else
-              echo "Expected increment to be 'patch', 'minor', 'major' or a static version e.g. '1.0.0', got $version_increment"
-              exit 1
-            fi
-          fi
-
-          new_version="$major.$minor.$patch$GHA_MAVENCENTRAL_NEXT_VERSION_SUFFIX"
-          echo "Next version is $new_version"
-          echo "VERSION=$new_version" >> $GITHUB_ENV
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-
       - name: Insert New Version Into File
         shell: bash
         env:
+          GHA_MAVENCENTRAL_VERSION: ${{ inputs.version }}
           GHA_MAVENCENTRAL_VERSION_FILE_NAME: ${{ inputs.version_file_name }}
           GHA_MAVENCENTRAL_VERSION_VARIABLE_NAME: ${{ inputs.version_variable_name }}
         run: |
@@ -138,7 +63,7 @@
 
           file_ext=$(echo "$GHA_MAVENCENTRAL_VERSION_FILE_NAME" | awk -F. '{print tolower($NF)}')
           if [ "$file_ext" = "properties" ]; then
-            sed -i "s/${GHA_MAVENCENTRAL_VERSION_VARIABLE_NAME}=.*/${GHA_MAVENCENTRAL_VERSION_VARIABLE_NAME}=$VERSION/" ${GHA_MAVENCENTRAL_VERSION_FILE_NAME}
+            sed -i "s/${GHA_MAVENCENTRAL_VERSION_VARIABLE_NAME}=.*/${GHA_MAVENCENTRAL_VERSION_VARIABLE_NAME}=$GHA_MAVENCENTRAL_VERSION/" ${GHA_MAVENCENTRAL_VERSION_FILE_NAME}
           elif [ "$file_ext" = "xml" ]; then
             if test -f $GHA_MAVENCENTRAL_VERSION_FILE_NAME; then
               output=$(xmlpath "project/$GHA_MAVENCENTRAL_VERSION_VARIABLE_NAME" < $GHA_MAVENCENTRAL_VERSION_FILE_NAME)
@@ -147,25 +72,26 @@
               tmp_file_name="$GHA_MAVENCENTRAL_VERSION_FILE_NAME.tmp"
 
               # This should probably be made a bit more safe
-              awk -v old="$previous_version" -v new="$VERSION" -v n="$previous_version_line" 'NR==n {sub(old,new)}1' "$GHA_MAVENCENTRAL_VERSION_FILE_NAME" > $tmp_file_name && mv $tmp_file_name "$GHA_MAVENCENTRAL_VERSION_FILE_NAME"
+              awk -v old="$previous_version" -v new="$GHA_MAVENCENTRAL_VERSION" -v n="$previous_version_line" 'NR==n {sub(old,new)}1' "$GHA_MAVENCENTRAL_VERSION_FILE_NAME" > $tmp_file_name && mv $tmp_file_name "$GHA_MAVENCENTRAL_VERSION_FILE_NAME"
             fi
           else
             echo "Expected a version file to be a gradle .properties or pom .xml file for version replacement"
             exit 1
           fi
 
-          echo "Inserted new version $VERSION into file $GHA_MAVENCENTRAL_VERSION_FILE_NAME"
+          echo "Inserted new version $GHA_MAVENCENTRAL_VERSION into file $GHA_MAVENCENTRAL_VERSION_FILE_NAME"
 
       - name: Push Version
         if: ${{ inputs.push_to_repo == 'true' }}
         shell: bash
         env:
             GHA_MAVENCENTRAL_GITHUB_REF_NAME: ${{ github.ref }}
+            GHA_MAVENCENTRAL_VERSION: ${{ inputs.version }}
             GHA_MAVENCENTRAL_VERSION_FILE_NAME: ${{ inputs.version_file_name }}
             GHA_MAVENCENTRAL_VERSION_VARIABLE_NAME: ${{ inputs.version_variable_name }}
         run: |
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
           git add "${GHA_MAVENCENTRAL_VERSION_FILE_NAME}"
-          git commit -m "chore(bump): ${GHA_MAVENCENTRAL_VERSION_VARIABLE_NAME} to ${VERSION} [skip ci]"
-          git push origin "${GHA_MAVENCENTRAL_GITHUB_REF_NAME}" --force
+          git commit -m "chore(bump): ${GHA_MAVENCENTRAL_VERSION_VARIABLE_NAME} to ${GHA_MAVENCENTRAL_VERSION} [skip ci]"
+          git push origin "${GHA_MAVENCENTRAL_GITHUB_REF_NAME}"

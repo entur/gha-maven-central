@@ -40,12 +40,12 @@ on:
         type: string
         default: 'v'
       # UPDATE VERSION
-      next_version:
+      version_next:
         description: "The next (semver) version of the artifact. Increments can be automatically detected ('') from the commit message, partially incremented using ('major', 'minor', 'patch'), or be forcefully defined (e.g. '1.3.0')"
         required: false
         type: string
         default: ''
-      next_version_suffix:
+      version_next_suffix:
         description: "The next version of the artifact's suffix. Usual values would be -snapshot or -prerelease"
         required: false
         type: string
@@ -101,23 +101,33 @@ jobs:
           version_variable_name: ${{ inputs.version_variable_name }}
           version_tag_prefix: ${{ inputs.version_tag_prefix }}
 
+      - id: increment-version
+        uses: ./.github/actions/increment-version
+        with:
+          version_previous: ${{ steps.get-version.outputs.version }}
+          version_next: ${{ inputs.version_next }}
+          version_next_suffix: ${{ inputs.version_next_suffix }}
+
+      - name: Verify JReleaser Config
+        shell: bash
+        env:
+          GHA_MAVENCENTRAL_VERSION_VARIABLE_NAME: ${{ inputs.version_variable_name }}
+          GHA_MAVENCENTRAL_VERSION: ${{ steps.increment-version.outputs.version }}
+        run: |
+          ./gradlew -Pversion=$GHA_MAVENCENTRAL_VERSION -P$GHA_MAVENCENTRAL_VERSION_VARIABLE_NAME=$GHA_MAVENCENTRAL_VERSION jreleaserConfig
+          ./gradlew -Pversion=$GHA_MAVENCENTRAL_VERSION -P$GHA_MAVENCENTRAL_VERSION_VARIABLE_NAME=$GHA_MAVENCENTRAL_VERSION clean
+
       - id: update-version
         uses: ./.github/actions/update-version
         with:
+          version: ${{ steps.increment-version.outputs.version }}
           version_file_name: ${{ inputs.version_file_name }}
           version_variable_name: ${{ inputs.version_variable_name }}
-          previous_version: ${{ steps.get-version.outputs.version }}
-          next_version: ${{ inputs.next_version }}
-          next_version_suffix: ${{ inputs.next_version_suffix }}
           push_to_repo: ${{ inputs.push_to_repo }}
-
-      - name: Verify JReleaser Config
-        run: |
-          ./gradlew jreleaserConfig
-          ./gradlew clean
 
       - name: JReleaser Publish (${{ steps.update-version.outputs.version }})
         id: publish
+        shell: bash
         env:
           JRELEASER_NEXUS2_MAVEN_CENTRAL_USERNAME: ${{ secrets.SONATYPE_AUTH_USER }}
           JRELEASER_NEXUS2_MAVEN_CENTRAL_PASSWORD: ${{ secrets.SONATYPE_AUTH_PASSWORD }}

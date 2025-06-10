@@ -80,6 +80,72 @@ jobs:
         # TODO:
         # We need to add tests for tag based version fetching
 
+  test-increment-version:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - id: get-version-gradle-good
+        uses: ./.github/actions/get-version
+        with:
+          version_strategy: "file"
+          version_file_name: "fixture/gradle.good.properties"
+
+      - id: increment-version-auto-gradle-good
+        uses: ./.github/actions/increment-version
+        with:
+          version_file_name: "fixture/gradle.good.properties"
+          previous_version: ${{ steps.get-version-gradle-good.outputs.version }}
+          push_to_repo: false
+
+      - name: Test gradle.properties auto increment version
+        shell: bash
+        env: 
+          GHA_MAVENCENTRAL_TEST_VERSION: ${{ steps.increment-version-auto-gradle-good.outputs.version }}
+        run: |
+          if [[ "$GHA_MAVENCENTRAL_TEST_VERSION" != "1.0.1" ]]; then
+            echo "Previous version $GHA_MAVENCENTRAL_TEST_VERSION not equal to 1.0.1"
+            exit 1
+          fi
+    
+      - id: increment-version-increment-gradle-good
+        uses: ./.github/actions/increment-version
+        with:
+          version_file_name: "fixture/gradle.good.properties"
+          previous_version: ${{ steps.increment-version-auto-gradle-good.outputs.version }}
+          version_next: "1.1.0"
+          push_to_repo: false
+
+      - name: Test gradle.properties increment version
+        shell: bash
+        env: 
+          GHA_MAVENCENTRAL_TEST_VERSION: ${{ steps.increment-version-increment-gradle-good.outputs.version }}
+        run: |
+          if [[ "$GHA_MAVENCENTRAL_TEST_VERSION" != "1.1.0" ]]; then
+            echo "Previous version $GHA_MAVENCENTRAL_TEST_VERSION not equal to 1.1.0"
+            exit 1
+          fi
+
+      - id: increment-version-static-gradle-good
+        uses: ./.github/actions/increment-version
+        with:
+          version_file_name: "fixture/gradle.good.properties"
+          previous_version: ${{ steps.increment-version-increment-gradle-good.outputs.version }}
+          version_next: "2.3.5"
+          push_to_repo: false
+
+      - name: Test gradle.properties static version
+        shell: bash
+        env: 
+          GHA_MAVENCENTRAL_TEST_VERSION: ${{ steps.increment-version-static-gradle-good.outputs.version }}
+        run: |
+          if [[ "$GHA_MAVENCENTRAL_TEST_VERSION" != "2.3.5" ]]; then
+            echo "Previous version $GHA_MAVENCENTRAL_TEST_VERSION not equal to 2.3.5"
+            exit 1
+          fi
+
   test-update-version:
     runs-on: ubuntu-24.04
     steps:
@@ -93,74 +159,27 @@ jobs:
           version_strategy: "file"
           version_file_name: "fixture/gradle.good.properties"
 
-      - id: update-version-auto-gradle-good
+      - id: update-version-gradle-good
         uses: ./.github/actions/update-version
         with:
           version_file_name: "fixture/gradle.good.properties"
           previous_version: ${{ steps.get-version-gradle-good.outputs.version }}
           push_to_repo: false
 
-      - id: get-version-auto-gradle-good
+      - id: get-version-final-gradle-good
         uses: ./.github/actions/get-version
         with:
           version_strategy: "file"
           version_file_name: "fixture/gradle.good.properties"
 
-      - name: Test gradle.properties version auto update
+      - name: Test gradle.properties update version
         shell: bash
         env: 
-          GHA_MAVENCENTRAL_TEST_VERSION: ${{ steps.get-version-auto-gradle-good.outputs.version }}
+          GHA_MAVENCENTRAL_TEST_VERSION: ${{ steps.get-version-gradle-good.outputs.version }}
+          GHA_MAVENCENTRAL_TEST_VERSION_FINAL: ${{ steps.get-version-final-gradle-good.outputs.version }}
         run: |
-          if [[ "$GHA_MAVENCENTRAL_TEST_VERSION" != "1.0.1" ]]; then
-            echo "Previous version $GHA_MAVENCENTRAL_TEST_VERSION not equal to 1.0.1"
-            exit 1
-          fi
-    
-      - id: update-version-increment-gradle-good
-        uses: ./.github/actions/update-version
-        with:
-          version_file_name: "fixture/gradle.good.properties"
-          previous_version: ${{ steps.update-version-auto-gradle-good.outputs.version }}
-          next_version: "minor"
-          push_to_repo: false
-
-      - id: get-version-increment-gradle-good
-        uses: ./.github/actions/get-version
-        with:
-          version_strategy: "file"
-          version_file_name: "fixture/gradle.good.properties"
-
-      - name: Test gradle.properties version increment update
-        shell: bash
-        env: 
-          GHA_MAVENCENTRAL_TEST_VERSION: ${{ steps.get-version-increment-gradle-good.outputs.version }}
-        run: |
-          if [[ "$GHA_MAVENCENTRAL_TEST_VERSION" != "1.1.0" ]]; then
-            echo "Previous version $GHA_MAVENCENTRAL_TEST_VERSION not equal to 1.1.0"
-            exit 1
-          fi
-
-      - id: update-version-static-gradle-good
-        uses: ./.github/actions/update-version
-        with:
-          version_file_name: "fixture/gradle.good.properties"
-          previous_version: ${{ steps.update-version-increment-gradle-good.outputs.version }}
-          next_version: "2.3.5"
-          push_to_repo: false
-
-      - id: get-version-static-gradle-good
-        uses: ./.github/actions/get-version
-        with:
-          version_strategy: "file"
-          version_file_name: "fixture/gradle.good.properties"
-
-      - name: Test gradle.properties static version update
-        shell: bash
-        env: 
-          GHA_MAVENCENTRAL_TEST_VERSION: ${{ steps.get-version-static-gradle-good.outputs.version }}
-        run: |
-          if [[ "$GHA_MAVENCENTRAL_TEST_VERSION" != "2.3.5" ]]; then
-            echo "Previous version $GHA_MAVENCENTRAL_TEST_VERSION not equal to 2.3.5"
+          if [[ "$GHA_MAVENCENTRAL_TEST_VERSION" != "$GHA_MAVENCENTRAL_TEST_VERSION_FINAL" ]]; then
+            echo "Previous version $GHA_MAVENCENTRAL_TEST_VERSION not equal to $GHA_MAVENCENTRAL_TEST_VERSION_FINAL"
             exit 1
           fi
 
