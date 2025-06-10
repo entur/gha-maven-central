@@ -3,11 +3,15 @@ description: "Publish release artifact to Maven Central for a Maven library proj
 on:
   workflow_call:
     inputs:
-      job_runner:
+      runner:
         description: "Job Runner"
         required: false
         type: string
         default: "ubuntu-24.04"
+      git_ref:
+        description: 'Option to override git reference to checkout before build'
+        type: string
+        required: false
       java_version:
         description: "Java Runtime Version"
         required: false
@@ -69,7 +73,7 @@ on:
 
 jobs:
   publish:
-    runs-on: ${{ inputs.job_runner }}
+    runs-on: ${{ inputs.runner }}
     permissions:
       contents: write
       issues: write
@@ -77,8 +81,20 @@ jobs:
     outputs:
       version: ${{ steps.publish.outputs.version }}
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        id: checkout-code
+        uses: actions/checkout@v4
+        if: ${{ inputs.git_ref == '' }}
         with:
+          fetch-tags: ${{ inputs.version_strategy == 'tag' && 'true' || 'false' }}
+          fetch-depth: 0
+          
+      - name: Checkout code with reference
+        id: checkout-code-ref
+        uses: actions/checkout@v4
+        if: ${{ inputs.git_ref != '' }}
+        with:
+          ref: ${{ inputs.git_ref }}
           fetch-tags: ${{ inputs.version_strategy == 'tag' && 'true' || 'false' }}
           fetch-depth: 0
 
