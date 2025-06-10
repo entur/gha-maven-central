@@ -1,99 +1,99 @@
-name: Update Artifact Version
-description: Update artifact version files and (enabled by default) pushes the changes back to the repo
-inputs:
-  version:
-    description: "The next (semver) version of the artifact.default:
-    required: true
-  version_file_name:
-    description: "The name of the file containing the version number to update"
-    required: true
-  version_variable_name:
-    description: "The name of the variable containing the version number to update"
-    required: false
-    default: "version"
-  push_to_repo:
-    description: "Whether to push the new version back to the repo"
-    required: false
-    default: "true"
-
-outputs:
-  version:
-    value: ${{ steps.result.outputs.version }}
-    description: "The updated version of the artifact"
-    
-runs:
-  using: "composite"
-  steps:
-    - name: Insert New Version Into File
-      id: result
-      shell: bash
-      env:
-        GHA_MAVENCENTRAL_VERSION: ${{ inputs.version }}
-        GHA_MAVENCENTRAL_VERSION_FILE_NAME: ${{ inputs.version_file_name }}
-        GHA_MAVENCENTRAL_VERSION_VARIABLE_NAME: ${{ inputs.version_variable_name }}
-      run: |
-        # Credit where credit is due
-        # https://unix.stackexchange.com/a/83481
-        function xmlpath()
-        {
-            local expr="${1//\// }"
-            local path=()
-            local chunk tag data
-            local line=1
-
-            while IFS='' read -r -d '<' chunk; do
-                IFS='>' read -r tag data <<< "$chunk"
-                
-                tag=(${tag[0]})
-                case "$tag" in
-                '?'*) ;;
-                '!–-'*) ;;
-                '![CDATA['*) data="${tag:8:${#tag}-10}" ;;
-                ?*'/') ;;
-                '/'?*) line=$(($line - 1)) unset path[${#path[@]}-1] ;;
-                ?*) line=$(($line + 1)) path+=("$tag") ;;
-                esac
-
-                if [[ "${path[@]}" == "$expr" ]]; then
-                    echo "$line $data"
-                    break
-                fi
-            done
-        }
-
-        file_ext=$(echo "$GHA_MAVENCENTRAL_VERSION_FILE_NAME" | awk -F. '{print tolower($NF)}')
-        if [ "$file_ext" = "properties" ]; then
-          sed -i "s/${GHA_MAVENCENTRAL_VERSION_VARIABLE_NAME}=.*/${GHA_MAVENCENTRAL_VERSION_VARIABLE_NAME}=$GHA_MAVENCENTRAL_VERSION/" ${GHA_MAVENCENTRAL_VERSION_FILE_NAME}
-        elif [ "$file_ext" = "xml" ]; then
-          if test -f $GHA_MAVENCENTRAL_VERSION_FILE_NAME; then
-            output=$(xmlpath "project/$GHA_MAVENCENTRAL_VERSION_VARIABLE_NAME" < $GHA_MAVENCENTRAL_VERSION_FILE_NAME)
-            previous_version=${output#* }
-            previous_version_line=${output%"$previous_version"}
-            tmp_file_name="$GHA_MAVENCENTRAL_VERSION_FILE_NAME.tmp"
-
-            # This should probably be made a bit more safe
-            awk -v old="$previous_version" -v new="$GHA_MAVENCENTRAL_VERSION" -v n="$previous_version_line" 'NR==n {sub(old,new)}1' "$GHA_MAVENCENTRAL_VERSION_FILE_NAME" > $tmp_file_name && mv $tmp_file_name "$GHA_MAVENCENTRAL_VERSION_FILE_NAME"
-          fi
-        else
-          echo "Expected a version file to be a gradle .properties or pom .xml file for version replacement"
-          exit 1
-        fi
-
-        echo "Inserted new version $GHA_MAVENCENTRAL_VERSION into file $GHA_MAVENCENTRAL_VERSION_FILE_NAME"
-        echo "VERSION=$GHA_MAVENCENTRAL_VERSION" >> $GITHUB_ENV
-        echo "version=$GHA_MAVENCENTRAL_VERSION" >> $GITHUB_OUTPUT
-
-    - name: Push Version
-      if: ${{ inputs.push_to_repo == 'true' }}
-      shell: bash
-      env:
-          GHA_MAVENCENTRAL_GITHUB_REF_NAME: ${{ github.ref }}
+  name: Update Artifact Version
+  description: Update artifact version files and (enabled by default) pushes the changes back to the repo
+  inputs:
+    version:
+      description: "The next (semver) version of the artifact"
+      required: true
+    version_file_name:
+      description: "The name of the file containing the version number to update"
+      required: true
+    version_variable_name:
+      description: "The name of the variable containing the version number to update"
+      required: false
+      default: "version"
+    push_to_repo:
+      description: "Whether to push the new version back to the repo"
+      required: false
+      default: "true"
+  
+  outputs:
+    version:
+      value: ${{ steps.result.outputs.version }}
+      description: "The updated version of the artifact"
+      
+  runs:
+    using: "composite"
+    steps:
+      - name: Insert New Version Into File
+        id: result
+        shell: bash
+        env:
           GHA_MAVENCENTRAL_VERSION: ${{ inputs.version }}
           GHA_MAVENCENTRAL_VERSION_FILE_NAME: ${{ inputs.version_file_name }}
           GHA_MAVENCENTRAL_VERSION_VARIABLE_NAME: ${{ inputs.version_variable_name }}
-      run: |
-        git config user.name github-actions[bot]
-        git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-        git add "${GHA_MAVENCENTRAL_VERSION_FILE_NAME}"
-        git commit -m "chore(bump): ${GHA_MAVENCENTRAL_VERSION_VARIABLE_NAME} to ${GHA_MAVENCENTRAL_VERSION} [skip ci]"
-        git push origin "${GHA_MAVENCENTRAL_GITHUB_REF_NAME}"
+        run: |
+          # Credit where credit is due
+          # https://unix.stackexchange.com/a/83481
+          function xmlpath()
+          {
+              local expr="${1//\// }"
+              local path=()
+              local chunk tag data
+              local line=1
+
+              while IFS='' read -r -d '<' chunk; do
+                  IFS='>' read -r tag data <<< "$chunk"
+                  
+                  tag=(${tag[0]})
+                  case "$tag" in
+                  '?'*) ;;
+                  '!–-'*) ;;
+                  '![CDATA['*) data="${tag:8:${#tag}-10}" ;;
+                  ?*'/') ;;
+                  '/'?*) line=$(($line - 1)) unset path[${#path[@]}-1] ;;
+                  ?*) line=$(($line + 1)) path+=("$tag") ;;
+                  esac
+
+                  if [[ "${path[@]}" == "$expr" ]]; then
+                      echo "$line $data"
+                      break
+                  fi
+              done
+          }
+
+          file_ext=$(echo "$GHA_MAVENCENTRAL_VERSION_FILE_NAME" | awk -F. '{print tolower($NF)}')
+          if [ "$file_ext" = "properties" ]; then
+            sed -i "s/${GHA_MAVENCENTRAL_VERSION_VARIABLE_NAME}=.*/${GHA_MAVENCENTRAL_VERSION_VARIABLE_NAME}=$GHA_MAVENCENTRAL_VERSION/" ${GHA_MAVENCENTRAL_VERSION_FILE_NAME}
+          elif [ "$file_ext" = "xml" ]; then
+            if test -f $GHA_MAVENCENTRAL_VERSION_FILE_NAME; then
+              output=$(xmlpath "project/$GHA_MAVENCENTRAL_VERSION_VARIABLE_NAME" < $GHA_MAVENCENTRAL_VERSION_FILE_NAME)
+              previous_version=${output#* }
+              previous_version_line=${output%"$previous_version"}
+              tmp_file_name="$GHA_MAVENCENTRAL_VERSION_FILE_NAME.tmp"
+
+              # This should probably be made a bit more safe
+              awk -v old="$previous_version" -v new="$GHA_MAVENCENTRAL_VERSION" -v n="$previous_version_line" 'NR==n {sub(old,new)}1' "$GHA_MAVENCENTRAL_VERSION_FILE_NAME" > $tmp_file_name && mv $tmp_file_name "$GHA_MAVENCENTRAL_VERSION_FILE_NAME"
+            fi
+          else
+            echo "Expected a version file to be a gradle .properties or pom .xml file for version replacement"
+            exit 1
+          fi
+
+          echo "Inserted new version $GHA_MAVENCENTRAL_VERSION into file $GHA_MAVENCENTRAL_VERSION_FILE_NAME"
+          echo "VERSION=$GHA_MAVENCENTRAL_VERSION" >> $GITHUB_ENV
+          echo "version=$GHA_MAVENCENTRAL_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Push Version
+        if: ${{ inputs.push_to_repo == 'true' }}
+        shell: bash
+        env:
+            GHA_MAVENCENTRAL_GITHUB_REF_NAME: ${{ github.ref }}
+            GHA_MAVENCENTRAL_VERSION: ${{ inputs.version }}
+            GHA_MAVENCENTRAL_VERSION_FILE_NAME: ${{ inputs.version_file_name }}
+            GHA_MAVENCENTRAL_VERSION_VARIABLE_NAME: ${{ inputs.version_variable_name }}
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add "${GHA_MAVENCENTRAL_VERSION_FILE_NAME}"
+          git commit -m "chore(bump): ${GHA_MAVENCENTRAL_VERSION_VARIABLE_NAME} to ${GHA_MAVENCENTRAL_VERSION} [skip ci]"
+          git push origin "${GHA_MAVENCENTRAL_GITHUB_REF_NAME}"
