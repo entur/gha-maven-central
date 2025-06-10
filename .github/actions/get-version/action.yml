@@ -9,8 +9,8 @@ inputs:
   version_file_name:
     description: "The name of the file containing the version number to get"
     required: true
-  version_variable_name:
-    description: "The name of the variable containing the version number to get"
+  version_file_variable_name:
+    description: "The name of the file variable containing the version number to get"
     required: false
     default: "version"
   # TAG STRATEGY
@@ -43,7 +43,7 @@ runs:
       shell: bash
       env:
         GHA_MAVENCENTRAL_VERSION_FILE_NAME: ${{ inputs.version_file_name }}
-        GHA_MAVENCENTRAL_VERSION_VARIABLE_NAME: ${{ inputs.version_variable_name }}
+        GHA_MAVENCENTRAL_VERSION_FILE_VARIABLE_NAME: ${{ inputs.version_file_variable_name }}
       run: |
         # Credit where credit is due
         # https://unix.stackexchange.com/a/83481
@@ -76,10 +76,10 @@ runs:
 
         file_ext=$(echo "$GHA_MAVENCENTRAL_VERSION_FILE_NAME" | awk -F. '{print tolower($NF)}')
         if [ "$file_ext" = "properties" ]; then
-          previous_version=$(cat $GHA_MAVENCENTRAL_VERSION_FILE_NAME | grep -w "$GHA_MAVENCENTRAL_VERSION_VARIABLE_NAME" | cut -d'=' -f2)
+          previous_version=$(cat $GHA_MAVENCENTRAL_VERSION_FILE_NAME | grep -w "$GHA_MAVENCENTRAL_VERSION_FILE_VARIABLE_NAME" | cut -d'=' -f2)
         elif [ $file_ext = "xml" ]; then
           if test -f $GHA_MAVENCENTRAL_VERSION_FILE_NAME; then
-            output=$(xmlpath "project/$GHA_MAVENCENTRAL_VERSION_VARIABLE_NAME" < $GHA_MAVENCENTRAL_VERSION_FILE_NAME)
+            output=$(xmlpath "project/$GHA_MAVENCENTRAL_VERSION_FILE_VARIABLE_NAME" < $GHA_MAVENCENTRAL_VERSION_FILE_NAME)
             previous_version=${output#* }
 
           fi
