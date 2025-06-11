@@ -55,11 +55,6 @@ on:
         required: false
         type: boolean
         default: false
-      publish:
-        description: "Whether to publish (true) or stage (false) the artifact to Maven Central"
-        required: false
-        type: boolean
-        default: true
     secrets:
       SONATYPE_AUTH_USER:
         required: true
