@@ -34,12 +34,12 @@ on:
         type: string
         default: "gradle.properties"
       version_file_variable_name:
-        description: "The name of the file variable containing the version number"
+        description: "The name of the file variable the previous version number"
         required: false
         type: string
         default: 'version'
       version_tag_prefix:
-        description: "The prefix of the tag containing the version number"
+        description: "The prefix of the tag containing the previous version number"
         required: false
         type: string
         default: "v"
