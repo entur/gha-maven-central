@@ -8,10 +8,6 @@ inputs:
     description: "The next (semver) version of the artifact. Increments can be noop (''), automatically detected ('auto') from the commit message, partially incremented using ('major', 'minor', 'patch'), or be forcefully defined (e.g. '1.3.0')"
     required: false
     default: "auto" #  noop (''), auto, major, minor, patch or a semver version
-  next_version_suffix:
-    description: "The next version of the artifact's suffix. Usual values would be -snapshot or -prerelease"
-    required: false
-    default: ""
 
 outputs:
   version:
@@ -27,7 +23,6 @@ runs:
       env:
         GHA_MAVENCENTRAL_PREVIOUS_VERSION: ${{ inputs.previous_version }}
         GHA_MAVENCENTRAL_NEXT_VERSION: ${{ inputs.next_version }}
-        GHA_MAVENCENTRAL_NEXT_VERSION_SUFFIX: ${{ inputs.next_version_suffix }}
       run: |
         # If next version is not defined, automatically increment the patch version,
         # or if defined, the commit message
@@ -58,11 +53,20 @@ runs:
             version_increment=$(echo $GHA_MAVENCENTRAL_NEXT_VERSION | xargs)
           fi
 
-          major="$(echo "$GHA_MAVENCENTRAL_PREVIOUS_VERSION" | cut -d. -f1)"
+          # Keep suffix if one is defined
+          content="$(echo "$GHA_MAVENCENTRAL_PREVIOUS_VERSION" | cut -d- -f1)"
+          suffix="$(echo "$GHA_MAVENCENTRAL_PREVIOUS_VERSION" | cut -d- -f2)"
+          if [ "$content" = "suffix" ]; then
+            suffix=""
+          else
+            suffix="-$suffix"
+          fi
+
+          major="$(echo "$content" | cut -d. -f1)"
           major=${major:-0}
-          minor=$(echo "$GHA_MAVENCENTRAL_PREVIOUS_VERSION" | cut -d. -f2)
+          minor=$(echo "$content" | cut -d. -f2)
           minor=${minor:-0}
-          patch=$(echo "$GHA_MAVENCENTRAL_PREVIOUS_VERSION" | cut -d. -f3)
+          patch=$(echo "$content" | cut -d. -f3)
           patch=${patch:-0}
 
           if [ "$version_increment" = "minor" ]; then
@@ -86,11 +90,11 @@ runs:
             fi
           fi
 
-          new_version="$major.$minor.$patch$GHA_MAVENCENTRAL_NEXT_VERSION_SUFFIX"
+          new_version="$major.$minor.$patch$suffix"
         else
           new_version="$GHA_MAVENCENTRAL_PREVIOUS_VERSION"
         fi
         
-        echo "Next version is $new_version"
+        echo "Incremented version is $new_version"
         echo "VERSION=$new_version" >> $GITHUB_ENV
         echo "version=$new_version" >> $GITHUB_OUTPUT

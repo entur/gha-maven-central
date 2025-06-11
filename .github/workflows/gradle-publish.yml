@@ -49,22 +49,17 @@ on:
         required: false
         type: string
         default: "auto" #  noop (''), auto, major, minor, patch or a semver version
-      next_version_suffix:
-        description: "The next version of the artifact's suffix. Usual values would be -snapshot or -prerelease"
-        required: false
-        type: string
-        default: ""
       push_to_repo:
         description: 'Whether to push the new version back to the repo'
         required: false
         type: boolean
         default: true
       # JRELEASE
-      publish:
-        description: "Whether to publish (true) or stage (false) the artifact to Maven Central"
+      snapshot:
+        description: "Whether the artifact is a snapshot or not"
         required: false
         type: boolean
-        default: true
+        default: false
 
     secrets:
       SONATYPE_AUTH_USER:
@@ -92,7 +87,6 @@ jobs:
       packages: write
     env:
       JRELEASER_GIT_ROOT_SEARCH: true
-      JRELEASER_MAVENCENTRAL_STAGE: ${{ inputs.publish == 'true' && 'FULL' || 'UPLOAD' }}
     outputs:
       version: ${{ steps.publish.outputs.version }}
     steps:
@@ -135,7 +129,27 @@ jobs:
         with:
           previous_version: ${{ steps.get-version.outputs.version }}
           next_version: ${{ inputs.next_version }}
-          next_version_suffix: ${{ inputs.next_version_suffix }}
+
+      - id: release-version
+        shell: bash
+        env: 
+          GHA_MAVENCENTRAL_SNAPSHOT: ${{ inputs.snapshot }} 
+          GHA_MAVENCENTRAL_VERSION: ${{ steps.increment-version.outputs.version }}
+        run: |
+          release_version=$GHA_MAVENCENTRAL_VERSION-SNAPSHOT
+
+          if [ "$GHA_MAVENCENTRAL_SNAPSHOT" = "true" ]; then
+            echo "JRELEASER_MAVENCENTRAL_STAGE=UPLOAD" >> $GITHUB_ENV
+            if [[ $my_string != *-SNAPSHOT ]]; then
+              release_version="$release_version-SNAPSHOT"
+            fi
+          else
+            echo "JRELEASER_MAVENCENTRAL_STAGE=FULL" >> $GITHUB_ENV
+            release_version=$(echo "$release_version" | cut -d- -f1)
+          fi
+
+          echo "Release version is $release_version"
+          echo "version=$release_version" >> $GITHUB_OUTPUT
 
       - name: Generate JReleaser Maven Central Config
         shell: bash
@@ -175,17 +189,17 @@ jobs:
           version_file_variable_name: ${{ inputs.version_file_variable_name }}
           push_to_repo: ${{ inputs.push_to_repo }}
 
-      - name: JReleaser Publish (${{ steps.update-version.outputs.version }})
+      - name: JReleaser Publish (${{ steps.release-version.outputs.version }})
         id: publish
         shell: bash
         env:
           GHA_MAVENCENTRAL_VERSION_FILE_VARIABLE_NAME: ${{ inputs.version_file_variable_name }}
-          GHA_MAVENCENTRAL_VERSION: ${{ steps.update-version.outputs.version }}
+          GHA_MAVENCENTRAL_VERSION: ${{ steps.release-version.outputs.version }}
         run: |
           ./gradlew -Pversion=$GHA_MAVENCENTRAL_VERSION -P$GHA_MAVENCENTRAL_VERSION_FILE_VARIABLE_NAME=$GHA_MAVENCENTRAL_VERSION publish
           ./gradlew -Pversion=$GHA_MAVENCENTRAL_VERSION -P$GHA_MAVENCENTRAL_VERSION_FILE_VARIABLE_NAME=$GHA_MAVENCENTRAL_VERSION jreleaserFullRelease
           
-          echo ":tada: Published $GHA_MAVENCENTRAL_VERSION to Maven Central." >> $GITHUB_STEP_SUMMARY
+          echo ":tada: Deployed $GHA_MAVENCENTRAL_VERSION to Maven Central." >> $GITHUB_STEP_SUMMARY
           echo "version=$GHA_MAVENCENTRAL_VERSION" >> $GITHUB_OUTPUT
         
       - name: Upload Build Reports
