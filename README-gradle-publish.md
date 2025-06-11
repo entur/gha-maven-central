@@ -6,8 +6,8 @@ Add the following step to your workflow configuration:
 
 ```yml
 jobs:
-  publish:
-    name: Publish to docker
+  publish-release:
+    name: Publish release to maven central
     uses: entur/gha-maven-central/.github/workflows/gradle-publish.yml@v1
     secrets: inherit
     
@@ -17,8 +17,8 @@ or
 
 ```yml
 jobs:
-  publish:
-    name: Publish to docker
+  publish-snapshot:
+    name: Publish snapshot to maven central
     uses: entur/gha-maven-central/.github/workflows/gradle-publish.yml@v1
     with:
         snapshot: true
