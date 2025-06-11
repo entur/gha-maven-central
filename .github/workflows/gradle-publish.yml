@@ -175,7 +175,7 @@ jobs:
         shell: bash
         env:
           GHA_MAVENCENTRAL_VERSION_FILE_VARIABLE_NAME: ${{ inputs.version_file_variable_name }}
-          GHA_MAVENCENTRAL_VERSION: ${{ steps.increment-version.outputs.version }}
+          GHA_MAVENCENTRAL_VERSION: ${{ steps.release-version.outputs.version }}
         run: |
           ./gradlew -Pversion=$GHA_MAVENCENTRAL_VERSION -P$GHA_MAVENCENTRAL_VERSION_FILE_VARIABLE_NAME=$GHA_MAVENCENTRAL_VERSION jreleaserConfig
           ./gradlew -Pversion=$GHA_MAVENCENTRAL_VERSION -P$GHA_MAVENCENTRAL_VERSION_FILE_VARIABLE_NAME=$GHA_MAVENCENTRAL_VERSION clean
