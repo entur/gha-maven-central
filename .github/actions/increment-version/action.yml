@@ -56,7 +56,7 @@ runs:
           # Keep suffix if one is defined
           content="$(echo "$GHA_MAVENCENTRAL_PREVIOUS_VERSION" | cut -d- -f1)"
           suffix="$(echo "$GHA_MAVENCENTRAL_PREVIOUS_VERSION" | cut -d- -f2)"
-          if [ "$content" = "suffix" ]; then
+          if [ "$content" = "$suffix" ]; then
             suffix=""
           else
             suffix="-$suffix"
