@@ -39,7 +39,7 @@ on:
         type: string
         default: 'version'
       version_tag_prefix:
-        description: "The prefix of the tag containing the previous version number"
+        description: "The prefix of the tag containing the previous version number to extract (used with the tag strategy)"
         required: false
         type: string
         default: "v"
