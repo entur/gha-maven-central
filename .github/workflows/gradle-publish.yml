@@ -139,7 +139,7 @@ jobs:
           release_version=$GHA_MAVENCENTRAL_VERSION
 
           if [ "$GHA_MAVENCENTRAL_SNAPSHOT" = "true" ]; then
-            echo "JRELEASER_MAVENCENTRAL_STAGE=UPLOAD" >> $GITHUB_ENV
+            echo "JRELEASER_MAVENCENTRAL_STAGE=FULL" >> $GITHUB_ENV
             if [[ $release_version != *-SNAPSHOT ]]; then
               release_version="$release_version-SNAPSHOT"
             fi
