@@ -194,5 +194,6 @@ jobs:
         with:
           name: reports
           path: |
+            **/out
             **/build/reports/
             **/build/test-results/

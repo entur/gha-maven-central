@@ -112,6 +112,7 @@ jobs:
         with:
           java-version: ${{ inputs.java_version }}
           distribution: ${{ inputs.java_distribution }}
+          cache: maven
 
       - id: get-version
         uses: entur/gha-maven-central/.github/actions/get-version@feat/brand-new
@@ -181,5 +182,6 @@ jobs:
         with:
           name: reports
           path: |
+            **/out
             **/build/reports/
             **/build/test-results/
