@@ -59,7 +59,7 @@ on:
         required: false
         type: boolean
         default: true
-      # PUBLISH
+      # JRELEASE
       publish:
         description: "Whether to publish (true) or stage (false) the artifact to Maven Central"
         required: false
