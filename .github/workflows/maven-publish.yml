@@ -78,6 +78,8 @@ jobs:
       contents: write
       issues: write
       packages: write
+    env:
+      JRELEASER_GIT_ROOT_SEARCH: true
     outputs:
       version: ${{ steps.publish.outputs.version }}
     steps:
@@ -128,11 +130,8 @@ jobs:
           GHA_MAVENCENTRAL_GPG_SECRET_KEY: ${{ secrets.SONATYPE_GPG_KEY }}
           GHA_MAVENCENTRAL_GPG_PASSPHRASE: ${{ secrets.SONATYPE_GPG_KEY_PASSWORD }}
         run: |
-          echo "JRELEASER_ENVIRONMENT_VARIABLES=$HOME/.jreleaser/config.toml" >> $GITHUB_ENV  
-          
           mkdir -p $HOME/.jreleaser
           cat << EOF >>$HOME/.jreleaser/config.toml
-          JRELEASER_BASEDIR="$GITHUB_WORKSPACE"
           JRELEASER_GITHUB_TOKEN="$GHA_MAVENCENTRAL_GITHUB_TOKEN"
           JRELEASER_MAVENCENTRAL_USERNAME="$GHA_MAVENCENTRAL_SONATYPE_USERNAME"
           JRELEASER_MAVENCENTRAL_PASSWORD="$GHA_MAVENCENTRAL_SONATYPE_PASSWORD"
@@ -140,8 +139,6 @@ jobs:
           JRELEASER_GPG_PUBLIC_KEY="""$(echo "$GHA_MAVENCENTRAL_GPG_PUBLIC_KEY" | base64 --decode)"""
           JRELEASER_GPG_SECRET_KEY="""$(echo "$GHA_MAVENCENTRAL_GPG_SECRET_KEY" | base64 --decode)"""
           EOF
-
-          ls $HOME/.jreleaser
 
       - name: Verify JReleaser Config
         shell: bash
