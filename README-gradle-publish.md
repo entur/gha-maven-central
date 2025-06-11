@@ -27,7 +27,108 @@ jobs:
     
 ```
 
-for snapshots
+for snapshots.
+
+Afterwards, you must also configure JReleaser in your gradle.build file:
+
+```groovy
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+    id 'org.jreleaser' version '1.18.0'
+}
+
+java {
+    withJavadocJar()
+    withSourcesJar()
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+            artifact sourcesJar
+            artifact javadocJar
+
+            groupId = project.group
+            artifactId = project.name
+            version = project.version
+
+            pom {
+                name = project.name
+                description = "YOUR DESCRIPTION"
+                packaging = 'jar'
+
+                url = "https://github.com/entur/${project.name}"
+
+                scm {
+                    connection = "scm:git:https://github.com/entur/${project.name}.git"
+                    developerConnection = "scm:git:https://github.com/entur/${project.name}.git"
+                    url = "https://github.com/entur/${project.name}"
+                }
+
+                licenses {
+                    license {
+                        name = "European Union Public Licence v. 1.2"
+                        url = "https://www.eupl.eu/"
+                    }
+                }
+
+                developers {
+                    developer {
+                        id = "someid"
+                        name = "yourname"
+                        email = "youremail@entur.org"
+                    }
+                }
+            }
+        }
+    }
+
+    repositories {
+        maven {
+            url = layout.buildDirectory.dir('staging-deploy')
+        }
+    }
+}
+
+jreleaser {
+    signing {
+        active = 'ALWAYS'
+        armored = true
+    }
+    deploy {
+        maven {
+            mavenCentral {
+                release {
+                    active = 'RELEASE'
+                    url = 'https://central.sonatype.com/api/v1/publisher'
+                    stagingRepository('build/staging-deploy')
+                }
+            }
+            nexus2 {
+                snapshot {
+                    active = 'SNAPSHOT'
+                    applyMavenCentralRules = true
+                    snapshotSupported = true
+                    closeRepository = true
+                    releaseRepository = true
+                    url = "https://s01.oss.sonatype.org/service/local"
+                    snapshotUrl = 'https://central.sonatype.com/repository/maven-snapshots/'
+                    stagingRepository('build/staging-deploy')
+                }
+            }
+        }
+    }
+    release {
+        github {
+            skipTag = false // Skip creating a new github tag?
+            skipRelease = true // Skip creating a new github release?
+        }
+    }
+}
+
+```
 
 ## Inputs
 
