@@ -136,11 +136,11 @@ jobs:
           GHA_MAVENCENTRAL_SNAPSHOT: ${{ inputs.snapshot }} 
           GHA_MAVENCENTRAL_VERSION: ${{ steps.increment-version.outputs.version }}
         run: |
-          release_version=$GHA_MAVENCENTRAL_VERSION-SNAPSHOT
+          release_version=$GHA_MAVENCENTRAL_VERSION
 
           if [ "$GHA_MAVENCENTRAL_SNAPSHOT" = "true" ]; then
             echo "JRELEASER_MAVENCENTRAL_STAGE=UPLOAD" >> $GITHUB_ENV
-            if [[ $my_string != *-SNAPSHOT ]]; then
+            if [[ $release_version != *-SNAPSHOT ]]; then
               release_version="$release_version-SNAPSHOT"
             fi
           else
