@@ -113,7 +113,7 @@ jreleaser {
                     snapshotSupported = true
                     closeRepository = true
                     releaseRepository = true
-                    url = "https://s01.oss.sonatype.org/service/local"
+                    url = "https://ossrh-staging-api.central.sonatype.com/service/local"
                     snapshotUrl = 'https://central.sonatype.com/repository/maven-snapshots/'
                     stagingRepository('build/staging-deploy')
                 }

@@ -123,8 +123,8 @@ Afterwards, you must also configure JReleaser in your pom.xml file:
                                 <nexus2>
                                     <maven-central>
                                         <active>SNAPSHOT</active>
-                                        <url>https://s01.oss.sonatype.org/service/local</url>
-                                        <snapshotUrl>https://s01.oss.sonatype.org/content/repositories/snapshots/</snapshotUrl>
+                                        <url>https://ossrh-staging-api.central.sonatype.com/service/local</url>
+                                        <snapshotUrl>https://central.sonatype.com/repository/maven-snapshots</snapshotUrl>
                                         <applyMavenCentralRules>true</applyMavenCentralRules>
                                         <snapshotSupported>true</snapshotSupported>
                                         <closeRepository>true</closeRepository>
