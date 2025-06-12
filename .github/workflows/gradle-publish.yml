@@ -122,7 +122,7 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
         
       - id: get-version
-        uses: entur/gha-maven-central/.github/actions/get-version@feat/brand-new
+        uses: entur/gha-maven-central/.github/actions/get-version@v1
         with:
           version_strategy: ${{ inputs.version_strategy }}
           version_file_name: ${{ inputs.version_file_name }}
@@ -130,7 +130,7 @@ jobs:
           version_tag_prefix: ${{ inputs.version_tag_prefix }}
 
       - id: increment-version
-        uses: entur/gha-maven-central/.github/actions/increment-version@feat/brand-new
+        uses: entur/gha-maven-central/.github/actions/increment-version@v1
         with:
           previous_version: ${{ steps.get-version.outputs.version }}
           next_version: ${{ inputs.next_version }}
@@ -186,7 +186,7 @@ jobs:
           ./gradlew -Pversion=$GHA_MAVENCENTRAL_VERSION -P$GHA_MAVENCENTRAL_VERSION_FILE_VARIABLE_NAME=$GHA_MAVENCENTRAL_VERSION clean
 
       - id: update-version
-        uses: entur/gha-maven-central/.github/actions/update-version@feat/brand-new
+        uses: entur/gha-maven-central/.github/actions/update-version@v1
         if: ${{ steps.get-version.outputs.version != steps.increment-version.outputs.version }}
         with:
           version: ${{ steps.increment-version.outputs.version }}
