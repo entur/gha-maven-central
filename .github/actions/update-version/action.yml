@@ -88,7 +88,7 @@
         shell: bash
         env:
             GHA_MAVENCENTRAL_GITHUB_REF_NAME: ${{ github.ref }}
-            GHA_MAVENCENTRAL_VERSION: ${{ inputs.version }}
+            GHA_MAVENCENTRAL_VERSION: ${{ steps.results.outputs.version }}
             GHA_MAVENCENTRAL_VERSION_FILE_NAME: ${{ inputs.version_file_name }}
             GHA_MAVENCENTRAL_VERSION_FILE_VARIABLE_NAME: ${{ inputs.version_file_variable_name }}
         run: |
