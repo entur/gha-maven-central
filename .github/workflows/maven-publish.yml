@@ -191,6 +191,7 @@ jobs:
         run: |
           mvn -B versions:set -DnewVersion=$GHA_MAVENCENTRAL_VERSION
           mvn -B -Ppublication deploy
+          mvn -B jreleaser:publish
           
           echo ":tada: Published $GHA_MAVENCENTRAL_VERSION to Maven Central." >> $GITHUB_STEP_SUMMARY
           echo "version=$GHA_MAVENCENTRAL_VERSION" >> $GITHUB_OUTPUT
