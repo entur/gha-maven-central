@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.0.1](https://github.com/entur/gha-maven-central/compare/v1.0.0...v1.0.1) (2025-06-17)
+
+
+### Bug Fixes
+
+* fix maven publish command ([#8](https://github.com/entur/gha-maven-central/issues/8)) ([749c5b6](https://github.com/entur/gha-maven-central/commit/749c5b6c5c312c4565389a581582208df37d2878))
+* Fixed version bump setting wrong version ([#6](https://github.com/entur/gha-maven-central/issues/6)) ([dbbd39d](https://github.com/entur/gha-maven-central/commit/dbbd39d7719b21ddf7f5f599a5c8aeae5cd126ce))
+
 ## 1.0.0 (2025-06-12)
 
 
