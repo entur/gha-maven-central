@@ -23,9 +23,24 @@ jobs:
           shell: bash
           env: 
             GHA_MAVENCENTRAL_TEST_VERSION: ${{ steps.get-version-gradle-good.outputs.version }}
+            GHA_MAVENCENTRAL_TEST_VERSION_MAJOR: ${{ steps.get-version-gradle-good.outputs.version_major }}
+            GHA_MAVENCENTRAL_TEST_VERSION_MINOR: ${{ steps.get-version-gradle-good.outputs.version_minor }}
+            GHA_MAVENCENTRAL_TEST_VERSION_PATCH: ${{ steps.get-version-gradle-good.outputs.version_patch }}
           run: |
             if [[ "$GHA_MAVENCENTRAL_TEST_VERSION" != "1.0.0" ]]; then
               echo "Previous version $GHA_MAVENCENTRAL_TEST_VERSION not equal to 1.0.0"
+              exit 1
+            fi
+            if [[ "$GHA_MAVENCENTRAL_TEST_VERSION_MAJOR" != "1" ]]; then
+              echo "Previous version $GHA_MAVENCENTRAL_TEST_VERSION_MAJOR not equal to 1"
+              exit 1
+            fi
+            if [[ "$GHA_MAVENCENTRAL_TEST_VERSION_MINOR" != "0" ]]; then
+              echo "Previous version $GHA_MAVENCENTRAL_TEST_VERSION_MINOR not equal to 0"
+              exit 1
+            fi
+            if [[ "$GHA_MAVENCENTRAL_TEST_VERSION_PATCH" != "0" ]]; then
+              echo "Previous version $GHA_MAVENCENTRAL_TEST_VERSION_PATCH not equal to 0"
               exit 1
             fi
 
@@ -40,9 +55,24 @@ jobs:
           shell: bash
           env: 
             GHA_MAVENCENTRAL_TEST_VERSION: ${{ steps.get-version-gradle-good-alt.outputs.version }}
+            GHA_MAVENCENTRAL_TEST_VERSION_MAJOR: ${{ steps.get-version-gradle-good-alt.outputs.version_major }}
+            GHA_MAVENCENTRAL_TEST_VERSION_MINOR: ${{ steps.get-version-gradle-good-alt.outputs.version_minor }}
+            GHA_MAVENCENTRAL_TEST_VERSION_PATCH: ${{ steps.get-version-gradle-good-alt.outputs.version_patch }}
           run: |
             if [[ "$GHA_MAVENCENTRAL_TEST_VERSION" != "1.2.4" ]]; then
               echo "Previous version $GHA_MAVENCENTRAL_TEST_VERSION not equal to 1.2.4"
+              exit 1
+            fi
+            if [[ "$GHA_MAVENCENTRAL_TEST_VERSION_MAJOR" != "1" ]]; then
+              echo "Previous version $GHA_MAVENCENTRAL_TEST_VERSION_MAJOR not equal to 1"
+              exit 1
+            fi
+            if [[ "$GHA_MAVENCENTRAL_TEST_VERSION_MINOR" != "2" ]]; then
+              echo "Previous version $GHA_MAVENCENTRAL_TEST_VERSION_MINOR not equal to 2"
+              exit 1
+            fi
+            if [[ "$GHA_MAVENCENTRAL_TEST_VERSION_PATCH" != "4" ]]; then
+              echo "Previous version $GHA_MAVENCENTRAL_TEST_VERSION_PATCH not equal to 4"
               exit 1
             fi
 
@@ -58,9 +88,24 @@ jobs:
           shell: bash
           env: 
             GHA_MAVENCENTRAL_TEST_VERSION: ${{ steps.get-version-maven-good.outputs.version }}
+            GHA_MAVENCENTRAL_TEST_VERSION_MAJOR: ${{ steps.get-version-maven-good.outputs.version_major }}
+            GHA_MAVENCENTRAL_TEST_VERSION_MINOR: ${{ steps.get-version-maven-good.outputs.version_minor }}
+            GHA_MAVENCENTRAL_TEST_VERSION_PATCH: ${{ steps.get-version-maven-good.outputs.version_patch }}
           run: |
             if [[ "$GHA_MAVENCENTRAL_TEST_VERSION" != "1.50.3" ]]; then
               echo "Previous version $GHA_MAVENCENTRAL_TEST_VERSION not equal to 1.50.3"
+              exit 1
+            fi
+            if [[ "$GHA_MAVENCENTRAL_TEST_VERSION_MAJOR" != "1" ]]; then
+              echo "Previous version $GHA_MAVENCENTRAL_TEST_VERSION_MAJOR not equal to 1"
+              exit 1
+            fi
+            if [[ "$GHA_MAVENCENTRAL_TEST_VERSION_MINOR" != "50" ]]; then
+              echo "Previous version $GHA_MAVENCENTRAL_TEST_VERSION_MINOR not equal to 50"
+              exit 1
+            fi
+            if [[ "$GHA_MAVENCENTRAL_TEST_VERSION_PATCH" != "3" ]]; then
+              echo "Previous version $GHA_MAVENCENTRAL_TEST_VERSION_PATCH not equal to 3"
               exit 1
             fi
 
@@ -75,9 +120,24 @@ jobs:
           shell: bash
           env: 
             GHA_MAVENCENTRAL_TEST_VERSION: ${{ steps.get-version-maven-good-alt.outputs.version }}
+            GHA_MAVENCENTRAL_TEST_VERSION_MAJOR: ${{ steps.get-version-maven-good-alt.outputs.version_major }}
+            GHA_MAVENCENTRAL_TEST_VERSION_MINOR: ${{ steps.get-version-maven-good-alt.outputs.version_minor }}
+            GHA_MAVENCENTRAL_TEST_VERSION_PATCH: ${{ steps.get-version-maven-good-alt.outputs.version_patch }}
           run: |
             if [[ "$GHA_MAVENCENTRAL_TEST_VERSION" != "4.0.0" ]]; then
               echo "Previous version $GHA_MAVENCENTRAL_TEST_VERSION not equal to 4.0.0"
+              exit 1
+            fi
+            if [[ "$GHA_MAVENCENTRAL_TEST_VERSION_MAJOR" != "4" ]]; then
+              echo "Previous version $GHA_MAVENCENTRAL_TEST_VERSION_MAJOR not equal to 4"
+              exit 1
+            fi
+            if [[ "$GHA_MAVENCENTRAL_TEST_VERSION_MINOR" != "0" ]]; then
+              echo "Previous version $GHA_MAVENCENTRAL_TEST_VERSION_MINOR not equal to 0"
+              exit 1
+            fi
+            if [[ "$GHA_MAVENCENTRAL_TEST_VERSION_PATCH" != "0" ]]; then
+              echo "Previous version $GHA_MAVENCENTRAL_TEST_VERSION_PATCH not equal to 0"
               exit 1
             fi
 
@@ -98,9 +158,24 @@ jobs:
         shell: bash
         env: 
           GHA_MAVENCENTRAL_TEST_VERSION: ${{ steps.increment-version-noop-good.outputs.version }}
+          GHA_MAVENCENTRAL_TEST_VERSION_MAJOR: ${{ steps.increment-version-noop-good.outputs.version_major }}
+          GHA_MAVENCENTRAL_TEST_VERSION_MINOR: ${{ steps.increment-version-noop-good.outputs.version_minor }}
+          GHA_MAVENCENTRAL_TEST_VERSION_PATCH: ${{ steps.increment-version-noop-good.outputs.version_patch }}
         run: |
           if [[ "$GHA_MAVENCENTRAL_TEST_VERSION" != "1.0.0" ]]; then
-            echo "Previous version $GHA_MAVENCENTRAL_TEST_VERSION not equal to 1.0.0"
+            echo "Next version $GHA_MAVENCENTRAL_TEST_VERSION not equal to 1.0.0"
+            exit 1
+          fi
+          if [[ "$GHA_MAVENCENTRAL_TEST_VERSION_MAJOR" != "1" ]]; then
+            echo "Next version $GHA_MAVENCENTRAL_TEST_VERSION_MAJOR not equal to 1"
+            exit 1
+          fi
+          if [[ "$GHA_MAVENCENTRAL_TEST_VERSION_MINOR" != "0" ]]; then
+            echo "Next version $GHA_MAVENCENTRAL_TEST_VERSION_MINOR not equal to 0"
+            exit 1
+          fi
+          if [[ "$GHA_MAVENCENTRAL_TEST_VERSION_PATCH" != "0" ]]; then
+            echo "Next version $GHA_MAVENCENTRAL_TEST_VERSION_PATCH not equal to 0"
             exit 1
           fi
 
@@ -113,9 +188,24 @@ jobs:
         shell: bash
         env: 
           GHA_MAVENCENTRAL_TEST_VERSION: ${{ steps.increment-version-auto-good.outputs.version }}
+          GHA_MAVENCENTRAL_TEST_VERSION_MAJOR: ${{ steps.increment-version-auto-good.outputs.version_major }}
+          GHA_MAVENCENTRAL_TEST_VERSION_MINOR: ${{ steps.increment-version-auto-good.outputs.version_minor }}
+          GHA_MAVENCENTRAL_TEST_VERSION_PATCH: ${{ steps.increment-version-auto-good.outputs.version_patch }}
         run: |
           if [[ "$GHA_MAVENCENTRAL_TEST_VERSION" != "1.0.1" ]]; then
-            echo "Previous version $GHA_MAVENCENTRAL_TEST_VERSION not equal to 1.0.1"
+            echo "Next version $GHA_MAVENCENTRAL_TEST_VERSION not equal to 1.0.1"
+            exit 1
+          fi
+          if [[ "$GHA_MAVENCENTRAL_TEST_VERSION_MAJOR" != "1" ]]; then
+            echo "Next version $GHA_MAVENCENTRAL_TEST_VERSION_MAJOR not equal to 1"
+            exit 1
+          fi
+          if [[ "$GHA_MAVENCENTRAL_TEST_VERSION_MINOR" != "0" ]]; then
+            echo "Next version $GHA_MAVENCENTRAL_TEST_VERSION_MINOR not equal to 0"
+            exit 1
+          fi
+          if [[ "$GHA_MAVENCENTRAL_TEST_VERSION_PATCH" != "1" ]]; then
+            echo "Next version $GHA_MAVENCENTRAL_TEST_VERSION_PATCH not equal to 1"
             exit 1
           fi
     
@@ -129,9 +219,24 @@ jobs:
         shell: bash
         env: 
           GHA_MAVENCENTRAL_TEST_VERSION: ${{ steps.increment-version-normal-good.outputs.version }}
+          GHA_MAVENCENTRAL_TEST_VERSION_MAJOR: ${{ steps.increment-version-normal-good.outputs.version_major }}
+          GHA_MAVENCENTRAL_TEST_VERSION_MINOR: ${{ steps.increment-version-normal-good.outputs.version_minor }}
+          GHA_MAVENCENTRAL_TEST_VERSION_PATCH: ${{ steps.increment-version-normal-good.outputs.version_patch }}
         run: |
           if [[ "$GHA_MAVENCENTRAL_TEST_VERSION" != "1.1.0" ]]; then
-            echo "Previous version $GHA_MAVENCENTRAL_TEST_VERSION not equal to 1.1.0"
+            echo "Next version $GHA_MAVENCENTRAL_TEST_VERSION not equal to 1.1.0"
+            exit 1
+          fi
+          if [[ "$GHA_MAVENCENTRAL_TEST_VERSION_MAJOR" != "1" ]]; then
+            echo "Next version $GHA_MAVENCENTRAL_TEST_VERSION_MAJOR not equal to 1"
+            exit 1
+          fi
+          if [[ "$GHA_MAVENCENTRAL_TEST_VERSION_MINOR" != "1" ]]; then
+            echo "Next version $GHA_MAVENCENTRAL_TEST_VERSION_MINOR not equal to 1"
+            exit 1
+          fi
+          if [[ "$GHA_MAVENCENTRAL_TEST_VERSION_PATCH" != "0" ]]; then
+            echo "Next version $GHA_MAVENCENTRAL_TEST_VERSION_PATCH not equal to 0"
             exit 1
           fi
 
@@ -145,9 +250,24 @@ jobs:
         shell: bash
         env: 
           GHA_MAVENCENTRAL_TEST_VERSION: ${{ steps.increment-version-static-good.outputs.version }}
+          GHA_MAVENCENTRAL_TEST_VERSION_MAJOR: ${{ steps.increment-version-static-good.outputs.version_major }}
+          GHA_MAVENCENTRAL_TEST_VERSION_MINOR: ${{ steps.increment-version-static-good.outputs.version_minor }}
+          GHA_MAVENCENTRAL_TEST_VERSION_PATCH: ${{ steps.increment-version-static-good.outputs.version_patch }}
         run: |
           if [[ "$GHA_MAVENCENTRAL_TEST_VERSION" != "2.3.5" ]]; then
-            echo "Previous version $GHA_MAVENCENTRAL_TEST_VERSION not equal to 2.3.5"
+            echo "Next version $GHA_MAVENCENTRAL_TEST_VERSION not equal to 2.3.5"
+            exit 1
+          fi
+          if [[ "$GHA_MAVENCENTRAL_TEST_VERSION_MAJOR" != "2" ]]; then
+            echo "Next version $GHA_MAVENCENTRAL_TEST_VERSION_MAJOR not equal to 2"
+            exit 1
+          fi
+          if [[ "$GHA_MAVENCENTRAL_TEST_VERSION_MINOR" != "3" ]]; then
+            echo "Next version $GHA_MAVENCENTRAL_TEST_VERSION_MINOR not equal to 3"
+            exit 1
+          fi
+          if [[ "$GHA_MAVENCENTRAL_TEST_VERSION_PATCH" != "5" ]]; then
+            echo "Next version $GHA_MAVENCENTRAL_TEST_VERSION_PATCH not equal to 5"
             exit 1
           fi
 
@@ -186,7 +306,7 @@ jobs:
           GHA_MAVENCENTRAL_TEST_VERSION_FINAL: ${{ steps.get-version-final-gradle-good.outputs.version }}
         run: |
           if [[ "$GHA_MAVENCENTRAL_TEST_VERSION" != "$GHA_MAVENCENTRAL_TEST_VERSION_FINAL" ]]; then
-            echo "Previous version $GHA_MAVENCENTRAL_TEST_VERSION not equal to $GHA_MAVENCENTRAL_TEST_VERSION_FINAL"
+            echo "Updated version $GHA_MAVENCENTRAL_TEST_VERSION not equal to $GHA_MAVENCENTRAL_TEST_VERSION_FINAL"
             exit 1
           fi
 
@@ -218,7 +338,7 @@ jobs:
           GHA_MAVENCENTRAL_TEST_VERSION_FINAL: ${{ steps.get-version-final-maven-good.outputs.version }}
         run: |
           if [[ "$GHA_MAVENCENTRAL_TEST_VERSION" != "$GHA_MAVENCENTRAL_TEST_VERSION_FINAL" ]]; then
-            echo "Previous version $GHA_MAVENCENTRAL_TEST_VERSION not equal to $GHA_MAVENCENTRAL_TEST_VERSION_FINAL"
+            echo "Updated version $GHA_MAVENCENTRAL_TEST_VERSION not equal to $GHA_MAVENCENTRAL_TEST_VERSION_FINAL"
             exit 1
           fi
 
