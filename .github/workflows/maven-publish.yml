@@ -189,8 +189,8 @@ jobs:
         env:
           GHA_MAVENCENTRAL_VERSION: ${{ steps.release-version.outputs.version }}
         run: |
-          mvn -B versions:set -DnewVersion=$GHA_MAVENCENTRAL_VERSION -Ppublication
-          mvn -B versions:set -DnewVersion=$GHA_MAVENCENTRAL_VERSION jreleaser:full-release
+          mvn -B versions:set -DnewVersion=$GHA_MAVENCENTRAL_VERSION
+          mvn -B -Ppublication deploy
           
           echo ":tada: Published $GHA_MAVENCENTRAL_VERSION to Maven Central." >> $GITHUB_STEP_SUMMARY
           echo "version=$GHA_MAVENCENTRAL_VERSION" >> $GITHUB_OUTPUT
