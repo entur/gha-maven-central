@@ -199,7 +199,6 @@ jobs:
           GHA_MAVENCENTRAL_VERSION: ${{ steps.final-version.outputs.version }}
         run: |
           ./gradlew -Pversion=$GHA_MAVENCENTRAL_VERSION -P$GHA_MAVENCENTRAL_VERSION_FILE_VARIABLE_NAME=$GHA_MAVENCENTRAL_VERSION jreleaserConfig
-          ./gradlew -Pversion=$GHA_MAVENCENTRAL_VERSION -P$GHA_MAVENCENTRAL_VERSION_FILE_VARIABLE_NAME=$GHA_MAVENCENTRAL_VERSION clean
 
       - name: JReleaser Publish (${{ steps.final-version.outputs.version }})
         id: publish
