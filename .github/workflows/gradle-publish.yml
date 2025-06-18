@@ -200,8 +200,8 @@ jobs:
         run: |
           ./gradlew -Pversion=$GHA_MAVENCENTRAL_VERSION -P$GHA_MAVENCENTRAL_VERSION_FILE_VARIABLE_NAME=$GHA_MAVENCENTRAL_VERSION jreleaserConfig
 
-      - name: JReleaser staging (publish)
-        id: publish
+      - name: JReleaser stage
+        id: stage
         shell: bash
         env:
           GHA_MAVENCENTRAL_VERSION_FILE_VARIABLE_NAME: ${{ inputs.version_file_variable_name }}
@@ -210,7 +210,7 @@ jobs:
           ./gradlew -Pversion=$GHA_MAVENCENTRAL_VERSION -P$GHA_MAVENCENTRAL_VERSION_FILE_VARIABLE_NAME=$GHA_MAVENCENTRAL_VERSION publish
 
       - name: JReleaser release
-        id: publish
+        id: release
         shell: bash
         env:
           GHA_MAVENCENTRAL_VERSION_FILE_VARIABLE_NAME: ${{ inputs.version_file_variable_name }}
