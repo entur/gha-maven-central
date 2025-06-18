@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0](https://github.com/entur/gha-maven-central/compare/v1.0.1...v1.1.0) (2025-06-18)
+
+
+### Features
+
+* Added support extracting individual version components, and fixed version bump for publishing workflows ([#9](https://github.com/entur/gha-maven-central/issues/9)) ([85945ab](https://github.com/entur/gha-maven-central/commit/85945abfff6cdc8d759e5b46959b92ecb4286d33))
+
 ## [1.0.1](https://github.com/entur/gha-maven-central/compare/v1.0.0...v1.0.1) (2025-06-17)
 
 
