@@ -23,6 +23,15 @@ outputs:
   version:
     value: ${{ steps.result.outputs.version }}
     description: "The current version of the artifact"
+  version_major:
+    value: ${{ steps.result.outputs.version_major }}
+    description: "The current major version of the artifact"
+  version_minor:
+    value: ${{ steps.result.outputs.version_minor }}
+    description: "The current minor version of the artifact"
+  version_patch:
+    value: ${{ steps.result.outputs.version_patch }}
+    description: "The current patch version of the artifact"
 
 runs:
   using: "composite"
@@ -116,4 +125,20 @@ runs:
 
     - id: result
       shell: bash
-      run: echo "version=$VERSION" >> $GITHUB_OUTPUT
+      run: |
+        content="$(echo "$VERSION" | cut -d- -f1)"
+        
+        major="$(echo "$content" | cut -d. -f1)"
+        major=${major:-0}
+        minor=$(echo "$content" | cut -d. -f2)
+        minor=${minor:-0}
+        patch=$(echo "$content" | cut -d. -f3)
+        patch=${patch:-0}
+        
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "VERSION_MAJOR=$major" >> $GITHUB_ENV
+        echo "version_major=$major" >> $GITHUB_OUTPUT
+        echo "VERSION_MINOR=$minor" >> $GITHUB_ENV
+        echo "version_minor=$minor" >> $GITHUB_OUTPUT
+        echo "VERSION_PATCH=$patch" >> $GITHUB_ENV
+        echo "version_patch=$patch" >> $GITHUB_OUTPUT

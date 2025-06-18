@@ -13,6 +13,15 @@ outputs:
   version:
     value: ${{ steps.result.outputs.version }}
     description: "The new version of the artifact"
+  version_major:
+    value: ${{ steps.result.outputs.version_major }}
+    description: "The new major version of the artifact"
+  version_minor:
+    value: ${{ steps.result.outputs.version_minor }}
+    description: "The new minor version of the artifact"
+  version_patch:
+    value: ${{ steps.result.outputs.version_patch }}
+    description: "The new patch version of the artifact"
 
 runs:
   using: "composite"
@@ -24,6 +33,24 @@ runs:
         GHA_MAVENCENTRAL_PREVIOUS_VERSION: ${{ inputs.previous_version }}
         GHA_MAVENCENTRAL_NEXT_VERSION: ${{ inputs.next_version }}
       run: |
+        new_version="$GHA_MAVENCENTRAL_PREVIOUS_VERSION"
+
+        # Keep suffix if one is defined
+        content="$(echo "$new_version" | cut -d- -f1)"
+        suffix="$(echo "$new_version" | cut -d- -f2)"
+        if [ "$content" = "$suffix" ]; then
+          suffix=""
+        else
+          suffix="-$suffix"
+        fi
+
+        major="$(echo "$content" | cut -d. -f1)"
+        major=${major:-0}
+        minor=$(echo "$content" | cut -d. -f2)
+        minor=${minor:-0}
+        patch=$(echo "$content" | cut -d. -f3)
+        patch=${patch:-0}
+
         # If next version is not defined, automatically increment the patch version,
         # or if defined, the commit message
         if [ "$GHA_MAVENCENTRAL_NEXT_VERSION" != "" ]; then
@@ -53,22 +80,6 @@ runs:
             version_increment=$(echo $GHA_MAVENCENTRAL_NEXT_VERSION | xargs)
           fi
 
-          # Keep suffix if one is defined
-          content="$(echo "$GHA_MAVENCENTRAL_PREVIOUS_VERSION" | cut -d- -f1)"
-          suffix="$(echo "$GHA_MAVENCENTRAL_PREVIOUS_VERSION" | cut -d- -f2)"
-          if [ "$content" = "$suffix" ]; then
-            suffix=""
-          else
-            suffix="-$suffix"
-          fi
-
-          major="$(echo "$content" | cut -d. -f1)"
-          major=${major:-0}
-          minor=$(echo "$content" | cut -d. -f2)
-          minor=${minor:-0}
-          patch=$(echo "$content" | cut -d. -f3)
-          patch=${patch:-0}
-
           if [ "$version_increment" = "minor" ]; then
             minor="$((minor + 1))"
             patch="0"
@@ -91,10 +102,15 @@ runs:
           fi
 
           new_version="$major.$minor.$patch$suffix"
-        else
-          new_version="$GHA_MAVENCENTRAL_PREVIOUS_VERSION"
         fi
         
         echo "Incremented version is $new_version"
         echo "VERSION=$new_version" >> $GITHUB_ENV
         echo "version=$new_version" >> $GITHUB_OUTPUT
+
+        echo "VERSION_MAJOR=$major" >> $GITHUB_ENV
+        echo "version_major=$major" >> $GITHUB_OUTPUT
+        echo "VERSION_MINOR=$minor" >> $GITHUB_ENV
+        echo "version_minor=$minor" >> $GITHUB_OUTPUT
+        echo "VERSION_PATCH=$patch" >> $GITHUB_ENV
+        echo "version_patch=$patch" >> $GITHUB_OUTPUT
