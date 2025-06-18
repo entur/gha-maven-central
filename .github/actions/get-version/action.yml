@@ -18,6 +18,10 @@ inputs:
     description: "The prefix of the tag containing the version number to get"
     required: false
     default: "v"
+  version_tag_max_fetch_depth:
+    description: "The maximum numbers of commits to search for tags"
+    required: false
+    default: "100"
 
 outputs:
   version:
@@ -101,11 +105,17 @@ runs:
       shell: bash
       env:
         GHA_MAVENCENTRAL_TAG_PREFIX: ${{ inputs.version_tag_prefix }}
+        MAX_FETCH_DEPTH: ${{ inputs.version_tag_max_fetch_depth }}
       run: |
         previous_tag=$(git tag -l --sort -version:refname "${GHA_MAVENCENTRAL_TAG_PREFIX}*" | head -n 1)
         if [ "$PREVIOUS_TAG" = "" ]; then
-          echo "Expected a pre-existing tag on the form '${GHA_MAVENCENTRAL_TAG_PREFIX}x.y.z' for version extraction"
-          exit 1
+          echo "Deepen git commit history by ${MAX_FETCH_DEPTH} to find previous release"
+          git fetch --deepen=${MAX_FETCH_DEPTH}
+          previous_tag=$(git tag -l --sort -version:refname "${GHA_MAVENCENTRAL_TAG_PREFIX}*" | head -n 1)
+          if [ "$PREVIOUS_TAG" = "" ]; then
+            echo "Expected a pre-existing tag on the form '${GHA_MAVENCENTRAL_TAG_PREFIX}x.y.z' for version extraction"
+            exit 1
+          fi
         fi
         
         rel_len=$(echo ${GHA_MAVENCENTRAL_TAG_PREFIX} | wc -c | xargs)
