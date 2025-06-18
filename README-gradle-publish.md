@@ -133,7 +133,7 @@ jreleaser {
 ```
 
 ## Multi-module projects
-Do not configure individual submodles. In the root build file, go with
+Do not configure individual submodules. In the root build file, go with
 
 ```
 id 'org.jreleaser' version '1.18.0' apply false
