@@ -133,24 +133,42 @@ jobs:
           previous_version: ${{ steps.get-version.outputs.version }}
           next_version: ${{ inputs.next_version }}
 
-      - id: release-version
+      - id: final-version
         shell: bash
         env: 
           GHA_MAVENCENTRAL_SNAPSHOT: ${{ inputs.snapshot }} 
-          GHA_MAVENCENTRAL_VERSION: ${{ steps.increment-version.outputs.version }}
+          GHA_MAVENCENTRAL_CURRENT_VERSION: ${{ steps.get-version.outputs.version }}
+          GHA_MAVENCENTRAL_CURRENT_VERSION_MAJOR: ${{ steps.get-version.outputs.version_major }}
+          GHA_MAVENCENTRAL_CURRENT_VERSION_MINOR: ${{ steps.get-version.outputs.version_minor }}
+          GHA_MAVENCENTRAL_CURRENT_VERSION_PATCH: ${{ steps.get-version.outputs.version_patch }}
+          GHA_MAVENCENTRAL_NEXT_VERSION_MAJOR: ${{ steps.increment-version.outputs.version_major }}
+          GHA_MAVENCENTRAL_NEXT_VERSION_MINOR: ${{ steps.increment-version.outputs.version_minor }}
+          GHA_MAVENCENTRAL_NEXT_VERSION_PATCH: ${{ steps.increment-version.outputs.version_patch }}
         run: |
-          release_version=$GHA_MAVENCENTRAL_VERSION
+          major=$GHA_MAVENCENTRAL_NEXT_VERSION_MAJOR
+          minor=$GHA_MAVENCENTRAL_NEXT_VERSION_MINOR
+          patch=$GHA_MAVENCENTRAL_NEXT_VERSION_PATCH
 
-          if [ "$GHA_MAVENCENTRAL_SNAPSHOT" = "true" ]; then
-            if [[ $release_version != *-SNAPSHOT ]]; then
-              release_version="$release_version-SNAPSHOT"
+          # If made a simple 1 digit patch bump, retain current version
+          if [[ $GHA_MAVENCENTRAL_CURRENT_VERSION == *-SNAPSHOT ]]; then
+            bumped_current_patch=$((GHA_MAVENCENTRAL_CURRENT_VERSION_PATCH+1))
+            if [ "$bumped_current_patch" ==  "$patch" ]; then
+              if [ "$GHA_MAVENCENTRAL_CURRENT_VERSION_MAJOR" ==  "$major" ] && [ "$GHA_MAVENCENTRAL_CURRENT_VERSION_MINOR" ==  "$minor" ]; then
+                patch=$GHA_MAVENCENTRAL_CURRENT_VERSION_PATCH
+              fi
             fi
-          else
-            release_version=$(echo "$release_version" | cut -d- -f1)
           fi
 
-          echo "Release version is $release_version"
-          echo "version=$release_version" >> $GITHUB_OUTPUT
+          if [ "$GHA_MAVENCENTRAL_SNAPSHOT" = "true" ]; then
+            echo "VERSION=$major.$minor.$patch-SNAPSHOT" >> $GITHUB_ENV
+            echo "version=$major.$minor.$patch-SNAPSHOT" >> $GITHUB_OUTPUT
+          else
+            echo "VERSION=$major.$minor.$patch" >> $GITHUB_ENV
+            echo "version=$major.$minor.$patch" >> $GITHUB_OUTPUT
+          fi
+
+          echo "NEXT_VERSION=$major.$minor.$((patch+1))-SNAPSHOT" >> $GITHUB_ENV
+          echo "next_version=$major.$minor.$((patch+1))-SNAPSHOT" >> $GITHUB_OUTPUT
 
       - name: Generate JReleaser Maven Central Config
         shell: bash
@@ -178,26 +196,17 @@ jobs:
         shell: bash
         env:
           GHA_MAVENCENTRAL_VERSION_FILE_VARIABLE_NAME: ${{ inputs.version_file_variable_name }}
-          GHA_MAVENCENTRAL_VERSION: ${{ steps.release-version.outputs.version }}
+          GHA_MAVENCENTRAL_VERSION: ${{ steps.final-version.outputs.version }}
         run: |
           ./gradlew -Pversion=$GHA_MAVENCENTRAL_VERSION -P$GHA_MAVENCENTRAL_VERSION_FILE_VARIABLE_NAME=$GHA_MAVENCENTRAL_VERSION jreleaserConfig
           ./gradlew -Pversion=$GHA_MAVENCENTRAL_VERSION -P$GHA_MAVENCENTRAL_VERSION_FILE_VARIABLE_NAME=$GHA_MAVENCENTRAL_VERSION clean
 
-      - id: update-version
-        uses: entur/gha-maven-central/.github/actions/update-version@v1
-        if: ${{ steps.get-version.outputs.version != steps.increment-version.outputs.version }}
-        with:
-          version: ${{ steps.increment-version.outputs.version }}
-          version_file_name: ${{ inputs.version_file_name }}
-          version_file_variable_name: ${{ inputs.version_file_variable_name }}
-          push_to_repo: ${{ inputs.push_to_repo }}
-
-      - name: JReleaser Publish (${{ steps.release-version.outputs.version }})
+      - name: JReleaser Publish (${{ steps.final-version.outputs.version }})
         id: publish
         shell: bash
         env:
           GHA_MAVENCENTRAL_VERSION_FILE_VARIABLE_NAME: ${{ inputs.version_file_variable_name }}
-          GHA_MAVENCENTRAL_VERSION: ${{ steps.release-version.outputs.version }}
+          GHA_MAVENCENTRAL_VERSION: ${{ steps.final-version.outputs.version }}
         run: |
           ./gradlew -Pversion=$GHA_MAVENCENTRAL_VERSION -P$GHA_MAVENCENTRAL_VERSION_FILE_VARIABLE_NAME=$GHA_MAVENCENTRAL_VERSION publish
           ./gradlew -Pversion=$GHA_MAVENCENTRAL_VERSION -P$GHA_MAVENCENTRAL_VERSION_FILE_VARIABLE_NAME=$GHA_MAVENCENTRAL_VERSION jreleaserFullRelease
@@ -205,6 +214,14 @@ jobs:
           echo ":tada: Deployed $GHA_MAVENCENTRAL_VERSION to Maven Central." >> $GITHUB_STEP_SUMMARY
           echo "version=$GHA_MAVENCENTRAL_VERSION" >> $GITHUB_OUTPUT
         
+      - name: Preare Next Version (${{ steps.final-version.outputs.next_version }})
+        uses: entur/gha-maven-central/.github/actions/update-version@v1
+        if: ${{ inputs.snapshot == 'false' }}
+        with:
+          version: ${{ steps.final-version.outputs.next_version }}
+          version_file_name: ${{ inputs.version_file_name }}
+          push_to_repo: ${{ inputs.push_to_repo }}
+
       - name: Upload Build Reports
         if: failure()
         uses: actions/upload-artifact@v4
