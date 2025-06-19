@@ -183,23 +183,31 @@ jobs:
           JRELEASER_GPG_SECRET_KEY="""$(echo "$GHA_MAVENCENTRAL_GPG_SECRET_KEY" | base64 --decode)"""
           EOF
 
-      - name: Verify JReleaser Config
+      - name: Set version
         shell: bash
         env:
           GHA_MAVENCENTRAL_VERSION: ${{ steps.final-version.outputs.version }}
         run: |
-            mvn -B versions:set -DnewVersion=$GHA_MAVENCENTRAL_VERSION jreleaser:config
-            mvn clean
+            mvn -B versions:set -DnewVersion=$GHA_MAVENCENTRAL_VERSION
+      - name: Verify JReleaser Config
+        shell: bash
+        run: |
+            # include publication profile here so that modules which
+            # are excluded from publishing (i.e. examples) can be disabled
+            mvn -B -Ppublication jreleaser:config
 
-      - name: JReleaser Publish (${{ steps.final-version.outputs.version }})
+      - name: JReleaser stage
+        id: publish
+        shell: bash
+        run: |
+          mvn -B -Ppublication deploy
+      - name: JReleaser release
         id: publish
         shell: bash
         env:
           GHA_MAVENCENTRAL_VERSION: ${{ steps.final-version.outputs.version }}
         run: |
-          mvn -B versions:set -DnewVersion=$GHA_MAVENCENTRAL_VERSION
-          mvn -B -Ppublication deploy
-          mvn -B jreleaser:full-release
+          mvn -B -Ppublication jreleaser:full-release
           
           echo ":tada: Published $GHA_MAVENCENTRAL_VERSION to Maven Central." >> $GITHUB_STEP_SUMMARY
           echo "version=$GHA_MAVENCENTRAL_VERSION" >> $GITHUB_OUTPUT
