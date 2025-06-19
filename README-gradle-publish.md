@@ -43,6 +43,8 @@ java {
     withSourcesJar()
 }
 
+ext.stagingRepositoryPath = "${rootDir.getCanonicalFile()}/build/staging-deploy"
+
 publishing {
     publications {
         mavenJava(MavenPublication) {
@@ -87,7 +89,7 @@ publishing {
 
     repositories {
         maven {
-            url = layout.buildDirectory.dir('staging-deploy')
+            url = stagingRepositoryPath
         }
     }
 }
@@ -103,7 +105,7 @@ jreleaser {
                 release {
                     active = 'RELEASE'
                     url = 'https://central.sonatype.com/api/v1/publisher'
-                    stagingRepository('build/staging-deploy')
+                    stagingRepository(stagingRepositoryPath)
                 }
             }
             nexus2 {
@@ -115,7 +117,7 @@ jreleaser {
                     releaseRepository = true
                     url = "https://ossrh-staging-api.central.sonatype.com/service/local"
                     snapshotUrl = 'https://central.sonatype.com/repository/maven-snapshots/'
-                    stagingRepository('build/staging-deploy')
+                    stagingRepository(stagingRepositoryPath)
                 }
             }
         }
@@ -129,6 +131,24 @@ jreleaser {
 }
 
 ```
+
+## Multi-module projects
+Do not configure individual submodules. In the root build file, go with
+
+```
+id 'org.jreleaser' version '1.18.0' apply false
+```
+
+then
+
+```
+task clean {
+}
+
+apply plugin: 'org.jreleaser'
+```
+
+before the `jreleaser` block.
 
 ## Inputs
 

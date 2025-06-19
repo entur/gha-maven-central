@@ -199,22 +199,28 @@ jobs:
           GHA_MAVENCENTRAL_VERSION: ${{ steps.final-version.outputs.version }}
         run: |
           ./gradlew -Pversion=$GHA_MAVENCENTRAL_VERSION -P$GHA_MAVENCENTRAL_VERSION_FILE_VARIABLE_NAME=$GHA_MAVENCENTRAL_VERSION jreleaserConfig
-          ./gradlew -Pversion=$GHA_MAVENCENTRAL_VERSION -P$GHA_MAVENCENTRAL_VERSION_FILE_VARIABLE_NAME=$GHA_MAVENCENTRAL_VERSION clean
 
-      - name: JReleaser Publish (${{ steps.final-version.outputs.version }})
-        id: publish
+      - name: JReleaser stage
+        id: stage
         shell: bash
         env:
           GHA_MAVENCENTRAL_VERSION_FILE_VARIABLE_NAME: ${{ inputs.version_file_variable_name }}
           GHA_MAVENCENTRAL_VERSION: ${{ steps.final-version.outputs.version }}
         run: |
-          ./gradlew -Pversion=$GHA_MAVENCENTRAL_VERSION -P$GHA_MAVENCENTRAL_VERSION_FILE_VARIABLE_NAME=$GHA_MAVENCENTRAL_VERSION publish
-          ./gradlew -Pversion=$GHA_MAVENCENTRAL_VERSION -P$GHA_MAVENCENTRAL_VERSION_FILE_VARIABLE_NAME=$GHA_MAVENCENTRAL_VERSION jreleaserFullRelease
-          
+          ./gradlew -Pversion=$GHA_MAVENCENTRAL_VERSION -P$GHA_MAVENCENTRAL_VERSION_FILE_VARIABLE_NAME=$GHA_MAVENCENTRAL_VERSION publish --info --stacktrace
+
+      - name: JReleaser release
+        id: release
+        shell: bash
+        env:
+          GHA_MAVENCENTRAL_VERSION_FILE_VARIABLE_NAME: ${{ inputs.version_file_variable_name }}
+          GHA_MAVENCENTRAL_VERSION: ${{ steps.final-version.outputs.version }}
+        run: |
+          ./gradlew -Pversion=$GHA_MAVENCENTRAL_VERSION -P$GHA_MAVENCENTRAL_VERSION_FILE_VARIABLE_NAME=$GHA_MAVENCENTRAL_VERSION jreleaserFullRelease --info --stacktrace
           echo ":tada: Deployed $GHA_MAVENCENTRAL_VERSION to Maven Central." >> $GITHUB_STEP_SUMMARY
           echo "version=$GHA_MAVENCENTRAL_VERSION" >> $GITHUB_OUTPUT
         
-      - name: Preare Next Version (${{ steps.final-version.outputs.next_version }})
+      - name: Prepare Next Version (${{ steps.final-version.outputs.next_version }})
         uses: entur/gha-maven-central/.github/actions/update-version@v1
         if: ${{ inputs.snapshot == 'false' }}
         with:
