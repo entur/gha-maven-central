@@ -120,7 +120,7 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
         
       - id: get-version
-        uses: entur/gha-maven-central/.github/actions/get-version@deepenHistoryForTag
+        uses: entur/gha-maven-central/.github/actions/get-version@v1
         with:
           version_strategy: ${{ inputs.version_strategy }}
           version_file_name: ${{ inputs.version_file_name }}
@@ -128,7 +128,7 @@ jobs:
           version_tag_prefix: ${{ inputs.version_tag_prefix }}
 
       - id: increment-version
-        uses: entur/gha-maven-central/.github/actions/increment-version@deepenHistoryForTag
+        uses: entur/gha-maven-central/.github/actions/increment-version@v1
         with:
           previous_version: ${{ steps.get-version.outputs.version }}
           next_version: ${{ inputs.next_version }}
@@ -221,7 +221,7 @@ jobs:
           echo "version=$GHA_MAVENCENTRAL_VERSION" >> $GITHUB_OUTPUT
         
       - name: Prepare Next Version (${{ steps.final-version.outputs.next_version }})
-        uses: entur/gha-maven-central/.github/actions/update-version@deepenHistoryForTag
+        uses: entur/gha-maven-central/.github/actions/update-version@v1
         if: ${{ inputs.snapshot == 'false' }}
         with:
           version: ${{ steps.final-version.outputs.next_version }}
