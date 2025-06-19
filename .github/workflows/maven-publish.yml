@@ -197,12 +197,12 @@ jobs:
             mvn -B -Ppublication jreleaser:config
 
       - name: JReleaser stage
-        id: publish
+        id: stage
         shell: bash
         run: |
           mvn -B -Ppublication deploy
       - name: JReleaser release
-        id: publish
+        id: release
         shell: bash
         env:
           GHA_MAVENCENTRAL_VERSION: ${{ steps.final-version.outputs.version }}
