@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.1](https://github.com/entur/gha-maven-central/compare/v1.1.0...v1.1.1) (2025-06-19)
+
+
+### Bug Fixes
+
+* Deepen git commit history to get the latest tag ([#12](https://github.com/entur/gha-maven-central/issues/12)) ([7411e34](https://github.com/entur/gha-maven-central/commit/7411e34615ea229e71bc9f1c534ec0cf10bcaea5))
+
 ## [1.1.0](https://github.com/entur/gha-maven-central/compare/v1.0.1...v1.1.0) (2025-06-18)
 
 
