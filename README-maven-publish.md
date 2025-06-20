@@ -151,7 +151,7 @@ Afterwards, you must also configure JReleaser in your pom.xml file:
         <profile>
             <id>publication</id>
             <properties>
-                <altDeploymentRepository>local::file:./build/staging-deploy</altDeploymentRepository>
+                <altDeploymentRepository>local::default::file:./target/staging-deploy</altDeploymentRepository>
             </properties>
             <build>
                 <defaultGoal>deploy</defaultGoal>

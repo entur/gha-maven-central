@@ -222,7 +222,7 @@ jobs:
         
       - name: Prepare Next Version (${{ steps.final-version.outputs.next_version }})
         uses: entur/gha-maven-central/.github/actions/update-version@v1
-        if: ${{ inputs.snapshot == 'false' }}
+        if: ${{ inputs.snapshot == false }}
         with:
           version: ${{ steps.final-version.outputs.next_version }}
           version_file_name: ${{ inputs.version_file_name }}
