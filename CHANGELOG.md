@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.2](https://github.com/entur/gha-maven-central/compare/v1.1.1...v1.1.2) (2025-06-20)
+
+
+### Bug Fixes
+
+* fix quotes &  Update README maven ([#17](https://github.com/entur/gha-maven-central/issues/17)) ([a1e48ac](https://github.com/entur/gha-maven-central/commit/a1e48ac4fdc723545b38187dc5fa87af49408bb0))
+
 ## [1.1.1](https://github.com/entur/gha-maven-central/compare/v1.1.0...v1.1.1) (2025-06-19)
 
 
