@@ -105,6 +105,7 @@ Afterwards, you must also configure JReleaser in your pom.xml file:
             <plugin>
                 <groupId>org.jreleaser</groupId>
                 <artifactId>jreleaser-maven-plugin</artifactId>
+                <inherited>false</inherited>
                 <configuration>
                     <jreleaser>
                         <signing>
