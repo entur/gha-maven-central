@@ -215,7 +215,7 @@ jobs:
           GHA_MAVENCENTRAL_VERSION: ${{ steps.final-version.outputs.version }}
           GHA_TAG_PREFIX: ${{ inputs.version_tag_prefix }}
         run: |
-          mvn -B -Ppublication jreleaser:full-release -Djreleaser.tag.name=${GHA_TAG_PREFIX}${GHA_MAVENCENTRAL_VERSION}
+          mvn --non-recursive -B -Ppublication jreleaser:full-release -Djreleaser.tag.name=${GHA_TAG_PREFIX}${GHA_MAVENCENTRAL_VERSION}
           
           echo ":tada: Published $GHA_MAVENCENTRAL_VERSION to Maven Central." >> $GITHUB_STEP_SUMMARY
           echo "version=$GHA_MAVENCENTRAL_VERSION" >> $GITHUB_OUTPUT
