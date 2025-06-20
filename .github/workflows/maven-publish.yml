@@ -206,7 +206,7 @@ jobs:
         id: stage
         shell: bash
         run: |
-          mvn --non-recursive -B -Ppublication deploy -Djreleaser.tag.name=${GHA_TAG_PREFIX}${GHA_MAVENCENTRAL_VERSION}
+          mvn -B -Ppublication deploy -Djreleaser.tag.name=${GHA_TAG_PREFIX}${GHA_MAVENCENTRAL_VERSION}
 
       - name: JReleaser release
         id: release
