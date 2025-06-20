@@ -117,7 +117,7 @@ Afterwards, you must also configure JReleaser in your pom.xml file:
                                     <sonatype>
                                         <active>RELEASE</active>
                                         <url>https://central.sonatype.com/api/v1/publisher</url>
-                                        <stagingRepositories>build/staging-deploy</stagingRepositories>
+                                        <stagingRepositories>target/staging-deploy</stagingRepositories>
                                     </sonatype>
                                 </mavenCentral>
                                 <nexus2>
@@ -129,7 +129,7 @@ Afterwards, you must also configure JReleaser in your pom.xml file:
                                         <snapshotSupported>true</snapshotSupported>
                                         <closeRepository>true</closeRepository>
                                         <releaseRepository>true</releaseRepository>
-                                        <stagingRepositories>build/staging-deploy</stagingRepositories>
+                                        <stagingRepositories>target/staging-deploy</stagingRepositories>
                                     </maven-central>
                                 </nexus2>
                             </maven>

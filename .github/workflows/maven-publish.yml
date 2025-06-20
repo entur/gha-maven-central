@@ -189,10 +189,11 @@ jobs:
           GHA_MAVENCENTRAL_VERSION: ${{ steps.final-version.outputs.version }}
         run: |
             mvn -B versions:set -DnewVersion=$GHA_MAVENCENTRAL_VERSION
+
       - name: Verify JReleaser Config
         shell: bash
         run: |
-            # include publication profile here so that modules which
+            # include publication profile in all commands so that modules which
             # are excluded from publishing (i.e. examples) can be disabled
             mvn -B -Ppublication jreleaser:config
 
@@ -201,6 +202,7 @@ jobs:
         shell: bash
         run: |
           mvn -B -Ppublication deploy
+
       - name: JReleaser release
         id: release
         shell: bash
@@ -226,6 +228,6 @@ jobs:
         with:
           name: reports
           path: |
-            **/out
-            **/build/reports/
-            **/build/test-results/
+            **/target/site
+            **/target/reports/
+            **/target/surefire-reports
