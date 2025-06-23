@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.3](https://github.com/entur/gha-maven-central/compare/v1.1.2...v1.1.3) (2025-06-23)
+
+
+### Bug Fixes
+
+* file strategy & get-version ([#20](https://github.com/entur/gha-maven-central/issues/20)) ([4dfe9e3](https://github.com/entur/gha-maven-central/commit/4dfe9e3e8ec03149bd728dd490550d299c001c27))
+
 ## [1.1.2](https://github.com/entur/gha-maven-central/compare/v1.1.1...v1.1.2) (2025-06-20)
 
 
