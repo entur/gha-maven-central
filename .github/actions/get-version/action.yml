@@ -73,7 +73,7 @@ runs:
                 tag=(${tag[0]})
                 case "$tag" in
                 '?'*) ;;
-                '!–-'*) ;;
+                '!--'*) ;;
                 '![CDATA['*) data="${tag:8:${#tag}-10}" ;;
                 ?*'/') ;;
                 '/'?*) line=$(($line - 1)) unset path[${#path[@]}-1] ;;
