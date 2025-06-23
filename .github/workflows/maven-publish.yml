@@ -170,6 +170,7 @@ jobs:
           GHA_MAVENCENTRAL_GPG_PUBLIC_KEY: ${{ secrets.SONATYPE_GPG_KEY_PUBLIC }}
           GHA_MAVENCENTRAL_GPG_SECRET_KEY: ${{ secrets.SONATYPE_GPG_KEY }}
           GHA_MAVENCENTRAL_GPG_PASSPHRASE: ${{ secrets.SONATYPE_GPG_KEY_PASSWORD }}
+
         run: |
           mkdir -p $HOME/.jreleaser
           cat << EOF >>$HOME/.jreleaser/config.toml
@@ -183,23 +184,38 @@ jobs:
           JRELEASER_GPG_SECRET_KEY="""$(echo "$GHA_MAVENCENTRAL_GPG_SECRET_KEY" | base64 --decode)"""
           EOF
 
+      - name: Set version
+        shell: bash
+        env:
+          GHA_MAVENCENTRAL_VERSION: ${{ steps.final-version.outputs.version }}
+          GHA_TAG_PREFIX: ${{ inputs.version_tag_prefix }}
+        run: |
+            mvn -B versions:set -DnewVersion=$GHA_MAVENCENTRAL_VERSION
+
       - name: Verify JReleaser Config
         shell: bash
+        run: |
+            # include publication profile in all commands so that modules which
+            # are excluded from publishing (i.e. examples) can be disabled
+            mvn --non-recursive -B -Ppublication jreleaser:config -Djreleaser.tag.name=${GHA_TAG_PREFIX}${GHA_MAVENCENTRAL_VERSION}
+
+      - name: JReleaser stage
         env:
           GHA_MAVENCENTRAL_VERSION: ${{ steps.final-version.outputs.version }}
+          GHA_TAG_PREFIX: ${{ inputs.version_tag_prefix }}
+        id: stage
+        shell: bash
         run: |
-            mvn -B versions:set -DnewVersion=$GHA_MAVENCENTRAL_VERSION jreleaser:config
-            mvn clean
+          mvn -B -Ppublication deploy -Djreleaser.tag.name=${GHA_TAG_PREFIX}${GHA_MAVENCENTRAL_VERSION}
 
-      - name: JReleaser Publish (${{ steps.final-version.outputs.version }})
-        id: publish
+      - name: JReleaser release
+        id: release
         shell: bash
         env:
           GHA_MAVENCENTRAL_VERSION: ${{ steps.final-version.outputs.version }}
+          GHA_TAG_PREFIX: ${{ inputs.version_tag_prefix }}
         run: |
-          mvn -B versions:set -DnewVersion=$GHA_MAVENCENTRAL_VERSION
-          mvn -B -Ppublication deploy
-          mvn -B jreleaser:full-release
+          mvn --non-recursive -B -Ppublication jreleaser:full-release -Djreleaser.tag.name=${GHA_TAG_PREFIX}${GHA_MAVENCENTRAL_VERSION}
           
           echo ":tada: Published $GHA_MAVENCENTRAL_VERSION to Maven Central." >> $GITHUB_STEP_SUMMARY
           echo "version=$GHA_MAVENCENTRAL_VERSION" >> $GITHUB_OUTPUT
@@ -218,6 +234,6 @@ jobs:
         with:
           name: reports
           path: |
-            **/out
-            **/build/reports/
-            **/build/test-results/
+            **/target/site
+            **/target/reports/
+            **/target/surefire-reports
