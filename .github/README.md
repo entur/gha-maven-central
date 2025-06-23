@@ -1,5 +1,5 @@
 <h1 align="center">
-      <img src="logo.png" width="96px" height="96px" />
+      <img src="logo.png" width="320px" height="320px" />
       <br>entur/gha-maven-central<br>
 </h1>
 
