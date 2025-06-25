@@ -12,6 +12,11 @@ on:
         description: "Option to override git reference to checkout before build"
         type: string
         required: false
+      settings-xml_file:
+        description: "Link to the external settings.xml file"
+        required: false
+        type: string
+        default: ""
       java_version:
         description: "Java Runtime Version"
         required: false
@@ -111,6 +116,11 @@ jobs:
           distribution: ${{ inputs.java_distribution }}
           cache: maven
 
+      - name: Copy maven settings
+        if: ${{ inputs.settings-xml_file != '' }}
+        run: |
+          wget ${{ inputs.settings-xml_file }} -O ~/.m2/settings.xml
+
       - id: get-version
         uses: entur/gha-maven-central/.github/actions/get-version@v1
         with:
@@ -203,6 +213,8 @@ jobs:
         env:
           GHA_MAVENCENTRAL_VERSION: ${{ steps.final-version.outputs.version }}
           GHA_TAG_PREFIX: ${{ inputs.version_tag_prefix }}
+          JFROG_USER: ${{ secrets.ARTIFACTORY_AUTH_USER }}
+          JFROG_PASS: ${{ secrets.ARTIFACTORY_AUTH_TOKEN }}
         id: stage
         shell: bash
         run: |
@@ -214,6 +226,8 @@ jobs:
         env:
           GHA_MAVENCENTRAL_VERSION: ${{ steps.final-version.outputs.version }}
           GHA_TAG_PREFIX: ${{ inputs.version_tag_prefix }}
+          JFROG_USER: ${{ secrets.ARTIFACTORY_AUTH_USER }}
+          JFROG_PASS: ${{ secrets.ARTIFACTORY_AUTH_TOKEN }}
         run: |
           mvn --non-recursive -B -Ppublication jreleaser:full-release -Djreleaser.tag.name=${GHA_TAG_PREFIX}${GHA_MAVENCENTRAL_VERSION}
           
