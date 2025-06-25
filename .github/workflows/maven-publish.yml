@@ -213,6 +213,8 @@ jobs:
         env:
           GHA_MAVENCENTRAL_VERSION: ${{ steps.final-version.outputs.version }}
           GHA_TAG_PREFIX: ${{ inputs.version_tag_prefix }}
+          JFROG_USER: ${{ secrets.ARTIFACTORY_AUTH_USER }}
+          JFROG_PASS: ${{ secrets.ARTIFACTORY_AUTH_TOKEN }}
         id: stage
         shell: bash
         run: |
@@ -224,6 +226,8 @@ jobs:
         env:
           GHA_MAVENCENTRAL_VERSION: ${{ steps.final-version.outputs.version }}
           GHA_TAG_PREFIX: ${{ inputs.version_tag_prefix }}
+          JFROG_USER: ${{ secrets.ARTIFACTORY_AUTH_USER }}
+          JFROG_PASS: ${{ secrets.ARTIFACTORY_AUTH_TOKEN }}
         run: |
           mvn --non-recursive -B -Ppublication jreleaser:full-release -Djreleaser.tag.name=${GHA_TAG_PREFIX}${GHA_MAVENCENTRAL_VERSION}
           
