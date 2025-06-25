@@ -12,6 +12,11 @@ on:
         description: "Option to override git reference to checkout before build"
         type: string
         required: false
+      settings-xml_file:
+        description: "Link to the external settings.xml file"
+        required: false
+        type: string
+        default: "https://link-to-my-settings.xml"
       java_version:
         description: "Java Runtime Version"
         required: false
@@ -103,6 +108,11 @@ jobs:
           ref: ${{ inputs.git_ref }}
           fetch-tags: ${{ inputs.version_strategy == 'tag' && 'true' || 'false' }}
           fetch-depth: 0
+
+      - name: Copy maven settings
+        if: ${{ inputs.settings-xml_file != '' }}
+        run: |
+          wget ${{ inputs.settings-xml_file }} -O ~/.m2/settings.xml
 
       - name: Set up Java ${{ inputs.java_version }}
         uses: actions/setup-java@v4
