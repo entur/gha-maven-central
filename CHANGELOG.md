@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0](https://github.com/entur/gha-maven-central/compare/v1.1.3...v1.2.0) (2025-06-25)
+
+
+### Features
+
+* add a parameter to download a custom link ([#22](https://github.com/entur/gha-maven-central/issues/22)) ([a0a8f92](https://github.com/entur/gha-maven-central/commit/a0a8f92ebdd55f3f40cc5c1f5e5c553e79354d39))
+
 ## [1.1.3](https://github.com/entur/gha-maven-central/compare/v1.1.2...v1.1.3) (2025-06-23)
 
 
