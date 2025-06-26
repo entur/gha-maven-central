@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.1](https://github.com/entur/gha-maven-central/compare/v1.2.0...v1.2.1) (2025-06-26)
+
+
+### Bug Fixes
+
+* add jfrog support for gradle and maven ([#24](https://github.com/entur/gha-maven-central/issues/24)) ([fddd45e](https://github.com/entur/gha-maven-central/commit/fddd45eb74aa9cc3ea3a5c35388acf2792748507))
+
 ## [1.2.0](https://github.com/entur/gha-maven-central/compare/v1.1.3...v1.2.0) (2025-06-25)
 
 
