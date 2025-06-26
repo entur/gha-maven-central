@@ -199,11 +199,16 @@ jobs:
         env:
           GHA_MAVENCENTRAL_VERSION: ${{ steps.final-version.outputs.version }}
           GHA_TAG_PREFIX: ${{ inputs.version_tag_prefix }}
+          JFROG_USER: ${{ secrets.ARTIFACTORY_AUTH_USER }}
+          JFROG_PASS: ${{ secrets.ARTIFACTORY_AUTH_TOKEN }}
         run: |
             mvn -B versions:set -DnewVersion=$GHA_MAVENCENTRAL_VERSION
 
       - name: Verify JReleaser Config
         shell: bash
+        env:
+          JFROG_USER: ${{ secrets.ARTIFACTORY_AUTH_USER }}
+          JFROG_PASS: ${{ secrets.ARTIFACTORY_AUTH_TOKEN }}
         run: |
             # include publication profile in all commands so that modules which
             # are excluded from publishing (i.e. examples) can be disabled
