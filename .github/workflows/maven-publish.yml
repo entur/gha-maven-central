@@ -29,7 +29,7 @@ on:
         default: "liberica"
       # GET VERSION
       version_strategy:
-        description: 'Strategy to use for version extraction. Currently supports "file" or "tag".'
+        description: 'Strategy to use for version extraction. Currently supports "file" or "tag" or "maven".'
         required: false
         type: string
         default: "file"
@@ -202,7 +202,7 @@ jobs:
           JFROG_USER: ${{ secrets.ARTIFACTORY_AUTH_USER }}
           JFROG_PASS: ${{ secrets.ARTIFACTORY_AUTH_TOKEN }}
         run: |
-            mvn -B versions:set -DnewVersion=$GHA_MAVENCENTRAL_VERSION
+            mvn -B versions:set -DnewVersion=$GHA_MAVENCENTRAL_VERSION -DgenerateBackupPoms=false -DprocessAllModules=true
 
       - name: Verify JReleaser Config
         shell: bash
@@ -238,6 +238,15 @@ jobs:
           
           echo ":tada: Published $GHA_MAVENCENTRAL_VERSION to Maven Central." >> $GITHUB_STEP_SUMMARY
           echo "version=$GHA_MAVENCENTRAL_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Update current version in GitHub ${{ steps.final-version.outputs.version }}
+        uses: entur/gha-maven-central/.github/actions/update-version@v1
+        if: ${{ inputs.snapshot == false && inputs.version_strategy == 'file' }}
+        with:
+          version: ${{ steps.final-version.outputs.version }}
+          version_file_name: ${{ inputs.version_file_name }}
+          version_file_variable_name: 'version'
+          push_to_repo: ${{ inputs.push_to_repo }}
 
       - name: Prepare Next Version (${{ steps.final-version.outputs.next_version }})
         uses: entur/gha-maven-central/.github/actions/update-version@v1

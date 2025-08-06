@@ -2,7 +2,7 @@ name: Get Artifact Version
 description: Get current artifact version from tag or file. Expects semver, e.g., 'version=1.0.2'
 inputs:
   version_strategy:
-    description: "Strategy to use for version extraction. Currently supports 'file' or 'tag'"
+    description: "Strategy to use for version extraction. Currently supports 'file' or 'tag' or 'maven'"
     required: true
     default: "file"
   # FILE STRATEGY
@@ -131,6 +131,16 @@ runs:
         previous_version=$(echo $previous_tag | cut -c ${rel_len}-)
 
         echo "Previous release version tag is: $previous_tag"
+        echo "VERSION=$previous_version" >> $GITHUB_ENV
+
+    - name: Get Version Number From Maven
+      if: ${{ inputs.version_strategy == 'maven' }}
+      env:
+        GHA_MAVENCENTRAL_VERSION_FILE_NAME: ${{ inputs.version_file_name }}
+        GHA_MAVENCENTRAL_VERSION_FILE_VARIABLE_NAME: ${{ inputs.version_file_variable_name }}
+      shell: bash
+      run: |
+        previous_version=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
         echo "VERSION=$previous_version" >> $GITHUB_ENV
 
     - id: result
