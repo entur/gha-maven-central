@@ -335,7 +335,7 @@ on:
           - major
           - minor
           - patch
-        default: "minor"
+        default: "patch"
 
 jobs:
   publish:
