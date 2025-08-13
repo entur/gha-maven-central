@@ -60,5 +60,5 @@
           git add "**/gradle.properties" &> /dev/null || true
           git add "gradle.properties" &> /dev/null || true
           git commit -m "chore(bump): Bump current version to $GHA_MAVENCENTRAL_VERSION [skip ci]"
-          git pull --rebase
+          git pull --rebase origin "${GHA_MAVENCENTRAL_GITHUB_REF_NAME}"
           git push origin "${GHA_MAVENCENTRAL_GITHUB_REF_NAME}"
