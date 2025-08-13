@@ -173,4 +173,182 @@ before the `jreleaser` block.
 ## Golden Path
 
 
-### Example
+### Example: Mono repository where modules are deployed together
+This setup demonstrates how to publish all modules in a Gradle multi-module (mono) repository in a single release, using JReleaser for deployment to Maven Central and GitHub Releases.
+
+### ./gradle.properties
+```
+group=org.entur.myArtifact
+version=1.0.0-SNAPSHOT
+```
+
+- group – Maven groupId for all modules in the repository.
+- version – The current project version, using -SNAPSHOT for development builds.
+
+#### ./build.gradle  (root project)
+Configures JReleaser to handle signing, staging, and deployment for all modules.
+
+``` properties
+plugins {
+    id 'base'                             // Provides lifecycle tasks like 'assemble' and 'check'
+    id 'org.jreleaser' version "1.19.0"   // Handles packaging and publishing
+}
+
+jreleaser {
+    signing {
+        active = 'ALWAYS'  // Always sign artifacts
+        armored = true     // Use ASCII-armored signatures
+    }
+    deploy {
+        maven {
+            // Maven Central release deployment configuration
+            mavenCentral {
+                release {
+                    active = 'RELEASE'
+                    url = 'https://central.sonatype.com/api/v1/publisher'
+                    stagingRepository('build/staging-deploy')
+                }
+            }
+            
+            // Nexus 2 snapshot deployment configuration
+            nexus2 {
+                snapshot {
+                    active = 'SNAPSHOT'
+                    applyMavenCentralRules = true
+                    snapshotSupported = true
+                    closeRepository = true
+                    releaseRepository = true
+                    url = "https://ossrh-staging-api.central.sonatype.com/service/local"
+                    snapshotUrl = 'https://central.sonatype.com/repository/maven-snapshots/'
+                    stagingRepository('build/staging-deploy')
+                }
+            }
+        }
+    }
+    release {
+        github {
+            enabled = true
+        }
+    }
+}
+```
+
+Key points:
+- mavenCentral block is for releases. 
+- nexus2 block is for snapshots. 
+- Both use the same local staging directory (build/staging-deploy) where artifacts are assembled before upload.
+
+#### ./module/build.gradle (per module)
+Configures the module to produce JARs, sources, and Javadoc for publishing.
+
+```
+plugins {
+    id 'java-library'   // Java library conventions
+    id 'maven-publish'  // Enables Maven publishing tasks
+}
+
+// Build a JAR with sources
+tasks.register('sourcesJar', Jar) {
+    dependsOn classes
+    archiveClassifier.set('sources')
+    from sourceSets.main.allSource
+}
+
+// Build a JAR with Javadoc
+tasks.register('javadocJar', Jar) {
+    dependsOn javadoc
+    archiveClassifier.set('javadoc')
+    from javadoc.destinationDir
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+            artifact sourcesJar
+            artifact javadocJar
+
+            groupId = project.group
+            artifactId = project.name
+            version = project.version
+
+            pom {
+                name = project.name
+                description = "A Java for *****."  // Replace with real description
+                packaging = 'jar'
+
+                url = "https://github.com/entur/${rootProject.name}"
+
+                scm {
+                    connection = "scm:git:https://github.com/entur/${rootProject.name}.git"
+                    developerConnection = "scm:git:https://github.com/entur/${rootProject.name}.git"
+                    url = "https://github.com/entur/${rootProject.name}"
+                }
+
+                licenses {
+                    license {
+                        name = "European Union Public Licence v. 1.2"
+                        url = "https://www.eupl.eu/"
+                    }
+                }
+
+                developers {
+                    developer {
+                        id = "myId"                   // Replace with real GitHub id
+                        name = "MyName"               // Replace with real name
+                        email = "MyName@entur.org"    // Replace with real email
+                        }
+                    }
+            }
+        }
+    }
+
+    // Local staging directory; JReleaser picks this up for deployment
+    repositories {
+        maven {
+            url = rootProject.layout.buildDirectory.dir("staging-deploy")
+        }
+    }
+}
+```
+
+Key points:
+- Each module produces:
+  - Main JAR (.jar)
+  - Sources JAR (-sources.jar)
+  - Javadoc JAR (-javadoc.jar)
+- repositories points to the same staging directory used in the root JReleaser config so all module artifacts are collected together.
+
+#### .github/workflows/publish.yaml
+GitHub Actions workflow to manually trigger a release.
+
+```
+name: Publish Release to Sonatype
+on:
+  workflow_dispatch:
+    inputs:
+      next_version:
+        description: "Version bump"
+        required: false
+        type: choice
+        options:
+          - major
+          - minor
+          - patch
+        default: "patch"
+
+jobs:
+  publish:
+    name: Publish Release to Maven Central
+    uses: entur/gha-maven-central/.github/workflows/gradle-publish.yml@v1
+    with:
+      next_version: ${{ inputs.next_version }}
+      version_file_name: "gradle.properties"
+    secrets: inherit
+```
+
+Key points:
+- Triggered manually via workflow_dispatch in GitHub Actions. 
+- Calls a shared Gradle publish workflow (entur/gha-maven-central). 
+- Supports semantic version bumping (major, minor, patch). 
+- Uses repository secrets for signing keys, OSSRH credentials, and GitHub authentication.
