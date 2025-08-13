@@ -8,7 +8,7 @@ inputs:
   # FILE STRATEGY
   version_file_name:
     description: "The name of the file containing the version number to get"
-    required: true
+    required: false
   version_file_variable_name:
     description: "The name of the file variable containing the version number to get"
     required: false
@@ -58,43 +58,13 @@ runs:
         GHA_MAVENCENTRAL_VERSION_FILE_NAME: ${{ inputs.version_file_name }}
         GHA_MAVENCENTRAL_VERSION_FILE_VARIABLE_NAME: ${{ inputs.version_file_variable_name }}
       run: |
-        # Credit where credit is due
-        # https://unix.stackexchange.com/a/83481
-        function xmlpath()
-        {
-            local expr="${1//\// }"
-            local path=()
-            local chunk tag data
-            local line=1
-
-            while IFS='' read -r -d '<' chunk; do
-                IFS='>' read -r tag data <<< "$chunk"
-                
-                tag=(${tag[0]})
-                case "$tag" in
-                '?'*) ;;
-                '!--'*) ;;
-                '![CDATA['*) data="${tag:8:${#tag}-10}" ;;
-                ?*'/') ;;
-                '/'?*) line=$(($line - 1)) unset path[${#path[@]}-1] ;;
-                ?*) line=$(($line + 1)) path+=("$tag") ;;
-                esac
-
-                if [[ "${path[@]}" == "$expr" ]]; then
-                    echo "$line $data"
-                    break
-                fi
-            done
-        }
-
         file_ext=$(echo "$GHA_MAVENCENTRAL_VERSION_FILE_NAME" | awk -F. '{print tolower($NF)}')
         if [ "$file_ext" = "properties" ]; then
           previous_version=$(cat $GHA_MAVENCENTRAL_VERSION_FILE_NAME | grep -w "$GHA_MAVENCENTRAL_VERSION_FILE_VARIABLE_NAME" | cut -d'=' -f2)
         elif [ $file_ext = "xml" ]; then
-          if test -f $GHA_MAVENCENTRAL_VERSION_FILE_NAME; then
-            output=$(xmlpath "project/$GHA_MAVENCENTRAL_VERSION_FILE_VARIABLE_NAME" < $GHA_MAVENCENTRAL_VERSION_FILE_NAME)
-            previous_version=${output#* }
-
+          previous_version=$(mvn help:evaluate -f $GHA_MAVENCENTRAL_VERSION_FILE_NAME -Dexpression="project.$GHA_MAVENCENTRAL_VERSION_FILE_VARIABLE_NAME" -q -DforceStdout)
+          if [ $previous_version = "null object or invalid expression" ]; then
+            previous_version=""
           fi
         else
           echo "Expected a version file to be a gradle .properties or pom .xml file for version extraction"

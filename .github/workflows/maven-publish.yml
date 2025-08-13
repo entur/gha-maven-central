@@ -197,12 +197,13 @@ jobs:
       - name: Set version
         shell: bash
         env:
+          GHA_MAVENCENTRAL_VERSION_FILE_NAME: ${{ inputs.version_file_name}}
           GHA_MAVENCENTRAL_VERSION: ${{ steps.final-version.outputs.version }}
           GHA_TAG_PREFIX: ${{ inputs.version_tag_prefix }}
           JFROG_USER: ${{ secrets.ARTIFACTORY_AUTH_USER }}
           JFROG_PASS: ${{ secrets.ARTIFACTORY_AUTH_TOKEN }}
         run: |
-            mvn -B versions:set -DnewVersion=$GHA_MAVENCENTRAL_VERSION
+          mvn -B versions:set -f $GHA_MAVENCENTRAL_VERSION_FILE_NAME -DnewVersion=$GHA_MAVENCENTRAL_VERSION -DgenerateBackupPoms=false -DprocessAllModules=true
 
       - name: Verify JReleaser Config
         shell: bash
@@ -210,9 +211,9 @@ jobs:
           JFROG_USER: ${{ secrets.ARTIFACTORY_AUTH_USER }}
           JFROG_PASS: ${{ secrets.ARTIFACTORY_AUTH_TOKEN }}
         run: |
-            # include publication profile in all commands so that modules which
-            # are excluded from publishing (i.e. examples) can be disabled
-            mvn --non-recursive -B -Ppublication jreleaser:config -Djreleaser.tag.name=${GHA_TAG_PREFIX}${GHA_MAVENCENTRAL_VERSION}
+          # include publication profile in all commands so that modules which
+          # are excluded from publishing (i.e. examples) can be disabled
+          mvn --non-recursive -B -Ppublication jreleaser:config -Djreleaser.tag.name=${GHA_TAG_PREFIX}${GHA_MAVENCENTRAL_VERSION}
 
       - name: JReleaser stage
         env:
@@ -224,6 +225,14 @@ jobs:
         shell: bash
         run: |
           mvn -B -Ppublication deploy -Djreleaser.tag.name=${GHA_TAG_PREFIX}${GHA_MAVENCENTRAL_VERSION}
+
+      - name: Prepare and Push Current Release Version (${{ steps.final-version.outputs.version }})
+        uses: entur/gha-maven-central/.github/actions/update-version@v1
+        if: ${{ inputs.snapshot == false && inputs.version_strategy == 'file' }}
+        with:
+          version: ${{ steps.final-version.outputs.version }}
+          version_file_name: ${{ inputs.version_file_name }}
+          push_to_repo: ${{ inputs.push_to_repo }}
 
       - name: JReleaser release
         id: release
@@ -239,7 +248,7 @@ jobs:
           echo ":tada: Published $GHA_MAVENCENTRAL_VERSION to Maven Central." >> $GITHUB_STEP_SUMMARY
           echo "version=$GHA_MAVENCENTRAL_VERSION" >> $GITHUB_OUTPUT
 
-      - name: Prepare Next Version (${{ steps.final-version.outputs.next_version }})
+      - name: Prepare and Push Next Version (${{ steps.final-version.outputs.next_version }})
         uses: entur/gha-maven-central/.github/actions/update-version@v1
         if: ${{ inputs.snapshot == false && inputs.version_strategy == 'file' }}
         with:
