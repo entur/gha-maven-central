@@ -197,12 +197,13 @@ jobs:
       - name: Set version
         shell: bash
         env:
+          GHA_MAVENCENTRAL_VERSION_FILE_NAME: ${{ inputs.version_file_name}}
           GHA_MAVENCENTRAL_VERSION: ${{ steps.final-version.outputs.version }}
           GHA_TAG_PREFIX: ${{ inputs.version_tag_prefix }}
           JFROG_USER: ${{ secrets.ARTIFACTORY_AUTH_USER }}
           JFROG_PASS: ${{ secrets.ARTIFACTORY_AUTH_TOKEN }}
         run: |
-          mvn -B versions:set -DnewVersion=$GHA_MAVENCENTRAL_VERSION -DgenerateBackupPoms=false -DprocessAllModules=true
+          mvn -B versions:set -f $GHA_MAVENCENTRAL_VERSION_FILE_NAME -DnewVersion=$GHA_MAVENCENTRAL_VERSION -DgenerateBackupPoms=false -DprocessAllModules=true
 
       - name: Verify JReleaser Config
         shell: bash
