@@ -215,6 +215,14 @@ jobs:
         run: |
           ./gradlew -Pversion=$GHA_MAVENCENTRAL_VERSION -P$GHA_MAVENCENTRAL_VERSION_FILE_VARIABLE_NAME=$GHA_MAVENCENTRAL_VERSION publish --info --stacktrace
 
+      - name: Prepare and Push Current Release Version (${{ steps.final-version.outputs.version }})
+        uses: entur/gha-maven-central/.github/actions/update-version@v1
+        if: ${{ inputs.snapshot == false && inputs.version_strategy == 'file' }}
+        with:
+          version: ${{ steps.final-version.outputs.version }}
+          version_file_name: ${{ inputs.version_file_name }}
+          push_to_repo: ${{ inputs.push_to_repo }}
+
       - name: JReleaser release
         id: release
         shell: bash
@@ -228,7 +236,7 @@ jobs:
           echo ":tada: Deployed $GHA_MAVENCENTRAL_VERSION to Maven Central." >> $GITHUB_STEP_SUMMARY
           echo "version=$GHA_MAVENCENTRAL_VERSION" >> $GITHUB_OUTPUT
         
-      - name: Prepare Next Version (${{ steps.final-version.outputs.next_version }})
+      - name: Prepare and Push Next Version (${{ steps.final-version.outputs.next_version }})
         uses: entur/gha-maven-central/.github/actions/update-version@v1
         if: ${{ inputs.snapshot == false && inputs.version_strategy == 'file' }}
         with:
