@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.4](https://github.com/entur/gha-maven-central/compare/v1.2.3...v1.2.4) (2025-08-13)
+
+
+### Bug Fixes
+
+* Update commit message ([#33](https://github.com/entur/gha-maven-central/issues/33)) ([402db80](https://github.com/entur/gha-maven-central/commit/402db809b1c2d04e057949ffd7bfb555e26ed977))
+
 ## [1.2.3](https://github.com/entur/gha-maven-central/compare/v1.2.2...v1.2.3) (2025-08-13)
 
 
