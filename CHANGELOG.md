@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.3](https://github.com/entur/gha-maven-central/compare/v1.2.2...v1.2.3) (2025-08-13)
+
+
+### Bug Fixes
+
+* Fix error on git add with missing file ([#30](https://github.com/entur/gha-maven-central/issues/30)) ([7427835](https://github.com/entur/gha-maven-central/commit/7427835e9fc9f089c2070dc4a98e5b2e8a50c191))
+
 ## [1.2.2](https://github.com/entur/gha-maven-central/compare/v1.2.1...v1.2.2) (2025-08-13)
 
 
