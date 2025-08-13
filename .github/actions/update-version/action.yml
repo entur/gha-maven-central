@@ -50,8 +50,8 @@
         if: ${{ inputs.push_to_repo == 'true' }}
         shell: bash
         env:
-            GHA_MAVENCENTRAL_GITHUB_REF_NAME: ${{ github.ref }}
-            GHA_MAVENCENTRAL_VERSION: ${{ steps.results.outputs.version }}
+          GHA_MAVENCENTRAL_GITHUB_REF_NAME: ${{ github.ref }}
+          GHA_MAVENCENTRAL_VERSION: ${{ steps.result.outputs.version }}
         run: |
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
@@ -60,4 +60,5 @@
           git add "**/gradle.properties" &> /dev/null || true
           git add "gradle.properties" &> /dev/null || true
           git commit -m "chore(bump): Bump current version to $GHA_MAVENCENTRAL_VERSION [skip ci]"
+          git pull --rebase origin "${GHA_MAVENCENTRAL_GITHUB_REF_NAME}"
           git push origin "${GHA_MAVENCENTRAL_GITHUB_REF_NAME}"
