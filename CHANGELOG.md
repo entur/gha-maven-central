@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.2](https://github.com/entur/gha-maven-central/compare/v1.2.1...v1.2.2) (2025-08-13)
+
+
+### Bug Fixes
+
+* Fixed file push behavior and get-version requirement behavior ([#28](https://github.com/entur/gha-maven-central/issues/28)) ([1b62e02](https://github.com/entur/gha-maven-central/commit/1b62e0267011f3747d9b8bf83fe970b870d71f3a))
+
 ## [1.2.1](https://github.com/entur/gha-maven-central/compare/v1.2.0...v1.2.1) (2025-06-26)
 
 
