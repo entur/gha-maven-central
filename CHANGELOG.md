@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.5](https://github.com/entur/gha-maven-central/compare/v1.2.4...v1.2.5) (2025-08-14)
+
+
+### Bug Fixes
+
+* Added concurrency groups to avoid race conditions ([#35](https://github.com/entur/gha-maven-central/issues/35)) ([49d3f4c](https://github.com/entur/gha-maven-central/commit/49d3f4cf5d7262569f8e83a8399be52445200394))
+
 ## [1.2.4](https://github.com/entur/gha-maven-central/compare/v1.2.3...v1.2.4) (2025-08-13)
 
 
