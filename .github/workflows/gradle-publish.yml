@@ -12,11 +12,6 @@ on:
         description: 'Option to override git reference to checkout before build'
         type: string
         required: false
-      git_ssh_key:
-        description: "Option to override git ssh key to checkout before build"
-        type: string
-        required: false
-        default: ""
       java_version:
         description: "Java Runtime Version"
         required: false
@@ -67,6 +62,9 @@ on:
         default: false
 
     secrets:
+      GIT_SSH_KEY:
+        description: "Option to override git ssh key to checkout before build"
+        required: false
       SONATYPE_AUTH_USER:
         required: true
       SONATYPE_AUTH_TOKEN:
@@ -111,7 +109,7 @@ jobs:
         with:
           fetch-tags: ${{ inputs.version_strategy == 'tag' && 'true' || 'false' }}
           fetch-depth: 0
-          ssh-key: ${{ inputs.git_ssh_key }}
+          ssh-key: ${{ secrets.GIT_SSH_KEY }}
           
       - name: Checkout code with reference
         uses: actions/checkout@v4
@@ -120,7 +118,7 @@ jobs:
           ref: ${{ inputs.git_ref }}
           fetch-tags: ${{ inputs.version_strategy == 'tag' && 'true' || 'false' }}
           fetch-depth: 0
-          ssh-key: ${{ inputs.git_ssh_key }}
+          ssh-key: ${{ secrets.GIT_SSH_KEY }}
 
       - name: Set up Java ${{ inputs.java_version }}
         uses: actions/setup-java@v4

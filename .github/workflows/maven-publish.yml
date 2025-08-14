@@ -12,11 +12,6 @@ on:
         description: "Option to override git reference to checkout before build"
         type: string
         required: false
-      git_ssh_key:
-        description: "Option to override git ssh key to checkout before build"
-        type: string
-        required: false
-        default: ""
       settings-xml_file:
         description: "Link to the external settings.xml file"
         required: false
@@ -66,6 +61,9 @@ on:
         type: boolean
         default: false
     secrets:
+      git_ssh_key:
+        description: "Option to override git ssh key to checkout before build"
+        required: false
       SONATYPE_AUTH_USER:
         required: true
       SONATYPE_AUTH_TOKEN:
