@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.0](https://github.com/entur/gha-maven-central/compare/v1.2.5...v1.3.0) (2025-08-14)
+
+
+### Features
+
+* Support custom ssh deploy keys ([#38](https://github.com/entur/gha-maven-central/issues/38)) ([4e0c432](https://github.com/entur/gha-maven-central/commit/4e0c43252868f88abc36914efb2c333656a7b77f))
+
 ## [1.2.5](https://github.com/entur/gha-maven-central/compare/v1.2.4...v1.2.5) (2025-08-14)
 
 
