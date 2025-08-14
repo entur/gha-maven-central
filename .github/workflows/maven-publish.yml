@@ -61,6 +61,9 @@ on:
         type: boolean
         default: false
     secrets:
+      GIT_SSH_KEY:
+        description: "Option to override git ssh key to checkout before build"
+        required: false
       SONATYPE_AUTH_USER:
         required: true
       SONATYPE_AUTH_TOKEN:
@@ -93,6 +96,8 @@ jobs:
       JRELEASER_DEPLOY_MAVEN_NEXUS2_ACTIVE: "SNAPSHOT"
       JRELEASER_NEXUS2_URL: "https://ossrh-staging-api.central.sonatype.com/service/local"
       JRELEASER_NEXUS2_SNAPSHOT_URL: "https://central.sonatype.com/repository/maven-snapshots"
+      JRELEASER_OVERWRITE: true
+      JRELEASER_UPDATE: true
       JRELEASER_GIT_ROOT_SEARCH: true
     outputs:
       version: ${{ steps.publish.outputs.version }}
@@ -103,6 +108,7 @@ jobs:
         with:
           fetch-tags: ${{ inputs.version_strategy == 'tag' && 'true' || 'false' }}
           fetch-depth: 0
+          ssh-key: ${{ secrets.git_ssh_key }}
           
       - name: Checkout code with reference
         uses: actions/checkout@v4
@@ -111,6 +117,7 @@ jobs:
           ref: ${{ inputs.git_ref }}
           fetch-tags: ${{ inputs.version_strategy == 'tag' && 'true' || 'false' }}
           fetch-depth: 0
+          ssh-key: ${{ secrets.GIT_SSH_KEY }}
 
       - name: Set up Java ${{ inputs.java_version }}
         uses: actions/setup-java@v4
@@ -230,6 +237,7 @@ jobs:
           mvn -B -Ppublication deploy -Djreleaser.tag.name=${GHA_TAG_PREFIX}${GHA_MAVENCENTRAL_VERSION}
 
       - name: Prepare and Push Current Release Version (${{ steps.final-version.outputs.version }})
+        id: push-current
         uses: entur/gha-maven-central/.github/actions/update-version@v1
         if: ${{ inputs.snapshot == false && inputs.version_strategy == 'file' }}
         with:
@@ -253,7 +261,7 @@ jobs:
 
       - name: Prepare and Push Next Version (${{ steps.final-version.outputs.next_version }})
         uses: entur/gha-maven-central/.github/actions/update-version@v1
-        if: ${{ inputs.snapshot == false && inputs.version_strategy == 'file' }}
+        if: ${{ (success() || (failure() && steps.push-current.conclusion == 'failure')) && (inputs.snapshot == false && inputs.version_strategy == 'file') }}
         with:
           version: ${{ steps.final-version.outputs.next_version }}
           version_file_name: ${{ inputs.version_file_name }}
