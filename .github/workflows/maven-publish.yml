@@ -12,6 +12,11 @@ on:
         description: "Option to override git reference to checkout before build"
         type: string
         required: false
+      git_ssh_key:
+        description: "Option to override git ssh key to checkout before build"
+        type: string
+        required: false
+        default: ""
       settings-xml_file:
         description: "Link to the external settings.xml file"
         required: false
@@ -103,6 +108,7 @@ jobs:
         with:
           fetch-tags: ${{ inputs.version_strategy == 'tag' && 'true' || 'false' }}
           fetch-depth: 0
+          ssh-key: ${{ inputs.git_ssh_key }}
           
       - name: Checkout code with reference
         uses: actions/checkout@v4
@@ -111,6 +117,7 @@ jobs:
           ref: ${{ inputs.git_ref }}
           fetch-tags: ${{ inputs.version_strategy == 'tag' && 'true' || 'false' }}
           fetch-depth: 0
+          ssh-key: ${{ inputs.git_ssh_key }}
 
       - name: Set up Java ${{ inputs.java_version }}
         uses: actions/setup-java@v4
