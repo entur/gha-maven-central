@@ -226,6 +226,7 @@ jobs:
           ./gradlew -Pversion=$GHA_MAVENCENTRAL_VERSION -P$GHA_MAVENCENTRAL_VERSION_FILE_VARIABLE_NAME=$GHA_MAVENCENTRAL_VERSION publish --info --stacktrace
 
       - name: Prepare and Push Current Release Version (${{ steps.final-version.outputs.version }})
+        id: push-current
         uses: entur/gha-maven-central/.github/actions/update-version@v1
         if: ${{ inputs.snapshot == false && inputs.version_strategy == 'file' }}
         with:
@@ -248,7 +249,7 @@ jobs:
         
       - name: Prepare and Push Next Version (${{ steps.final-version.outputs.next_version }})
         uses: entur/gha-maven-central/.github/actions/update-version@v1
-        if: ${{ inputs.snapshot == false && inputs.version_strategy == 'file' }}
+        if: ${{ (success() || (failure() && steps.push-current.conclusion == 'failure')) && (inputs.snapshot == false && inputs.version_strategy == 'file') }}
         with:
           version: ${{ steps.final-version.outputs.next_version }}
           version_file_name: ${{ inputs.version_file_name }}
