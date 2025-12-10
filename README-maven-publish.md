@@ -29,6 +29,10 @@ jobs:
 
 for snapshots.
 
+**Note:** If you want to manage versioning yourself and only use publishing functionality, see the [maven-release documentation](README-maven-release.md) for a standalone publishing workflow.
+
+## JReleaser Configuration
+
 Afterwards, you must also configure JReleaser in your pom.xml file:
 
 ```xml

@@ -100,7 +100,7 @@ jobs:
       JRELEASER_UPDATE: true
       JRELEASER_GIT_ROOT_SEARCH: true
     outputs:
-      version: ${{ steps.publish.outputs.version }}
+      version: ${{ steps.release.outputs.version || steps.final-version.outputs.version }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -181,29 +181,6 @@ jobs:
           echo "NEXT_VERSION=$major.$minor.$((patch+1))-SNAPSHOT" >> $GITHUB_ENV
           echo "next_version=$major.$minor.$((patch+1))-SNAPSHOT" >> $GITHUB_OUTPUT
 
-      - name: Generate JReleaser Maven Central Config
-        shell: bash
-        env:
-          GHA_MAVENCENTRAL_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GHA_MAVENCENTRAL_SONATYPE_USERNAME: ${{ secrets.SONATYPE_AUTH_USER }}
-          GHA_MAVENCENTRAL_SONATYPE_PASSWORD: ${{ secrets.SONATYPE_AUTH_TOKEN }}
-          GHA_MAVENCENTRAL_GPG_PUBLIC_KEY: ${{ secrets.SONATYPE_GPG_KEY_PUBLIC }}
-          GHA_MAVENCENTRAL_GPG_SECRET_KEY: ${{ secrets.SONATYPE_GPG_KEY }}
-          GHA_MAVENCENTRAL_GPG_PASSPHRASE: ${{ secrets.SONATYPE_GPG_KEY_PASSWORD }}
-
-        run: |
-          mkdir -p $HOME/.jreleaser
-          cat << EOF >>$HOME/.jreleaser/config.toml
-          JRELEASER_GITHUB_TOKEN="$GHA_MAVENCENTRAL_GITHUB_TOKEN"
-          JRELEASER_NEXUS2_USERNAME="$GHA_MAVENCENTRAL_SONATYPE_USERNAME"
-          JRELEASER_NEXUS2_PASSWORD="$GHA_MAVENCENTRAL_SONATYPE_PASSWORD"
-          JRELEASER_MAVENCENTRAL_USERNAME="$GHA_MAVENCENTRAL_SONATYPE_USERNAME"
-          JRELEASER_MAVENCENTRAL_PASSWORD="$GHA_MAVENCENTRAL_SONATYPE_PASSWORD"
-          JRELEASER_GPG_PASSPHRASE="$GHA_MAVENCENTRAL_GPG_PASSPHRASE"
-          JRELEASER_GPG_PUBLIC_KEY="""$(echo "$GHA_MAVENCENTRAL_GPG_PUBLIC_KEY" | base64 --decode)"""
-          JRELEASER_GPG_SECRET_KEY="""$(echo "$GHA_MAVENCENTRAL_GPG_SECRET_KEY" | base64 --decode)"""
-          EOF
-
       - name: Set version
         shell: bash
         env:
@@ -215,27 +192,6 @@ jobs:
         run: |
           mvn -B versions:set -f $GHA_MAVENCENTRAL_VERSION_FILE_NAME -DnewVersion=$GHA_MAVENCENTRAL_VERSION -DgenerateBackupPoms=false -DprocessAllModules=true
 
-      - name: Verify JReleaser Config
-        shell: bash
-        env:
-          JFROG_USER: ${{ secrets.ARTIFACTORY_AUTH_USER }}
-          JFROG_PASS: ${{ secrets.ARTIFACTORY_AUTH_TOKEN }}
-        run: |
-          # include publication profile in all commands so that modules which
-          # are excluded from publishing (i.e. examples) can be disabled
-          mvn --non-recursive -B -Ppublication jreleaser:config -Djreleaser.tag.name=${GHA_TAG_PREFIX}${GHA_MAVENCENTRAL_VERSION}
-
-      - name: JReleaser stage
-        env:
-          GHA_MAVENCENTRAL_VERSION: ${{ steps.final-version.outputs.version }}
-          GHA_TAG_PREFIX: ${{ inputs.version_tag_prefix }}
-          JFROG_USER: ${{ secrets.ARTIFACTORY_AUTH_USER }}
-          JFROG_PASS: ${{ secrets.ARTIFACTORY_AUTH_TOKEN }}
-        id: stage
-        shell: bash
-        run: |
-          mvn -B -Ppublication deploy -Djreleaser.tag.name=${GHA_TAG_PREFIX}${GHA_MAVENCENTRAL_VERSION}
-
       - name: Prepare and Push Current Release Version (${{ steps.final-version.outputs.version }})
         id: push-current
         uses: entur/gha-maven-central/.github/actions/update-version@v1
@@ -245,19 +201,20 @@ jobs:
           version_file_name: ${{ inputs.version_file_name }}
           push_to_repo: ${{ inputs.push_to_repo }}
 
-      - name: JReleaser release
+      - name: JReleaser Release to Maven Central
         id: release
-        shell: bash
-        env:
-          GHA_MAVENCENTRAL_VERSION: ${{ steps.final-version.outputs.version }}
-          GHA_TAG_PREFIX: ${{ inputs.version_tag_prefix }}
-          JFROG_USER: ${{ secrets.ARTIFACTORY_AUTH_USER }}
-          JFROG_PASS: ${{ secrets.ARTIFACTORY_AUTH_TOKEN }}
-        run: |
-          mvn --non-recursive -B -Ppublication jreleaser:full-release -Djreleaser.tag.name=${GHA_TAG_PREFIX}${GHA_MAVENCENTRAL_VERSION}
-          
-          echo ":tada: Published $GHA_MAVENCENTRAL_VERSION to Maven Central." >> $GITHUB_STEP_SUMMARY
-          echo "version=$GHA_MAVENCENTRAL_VERSION" >> $GITHUB_OUTPUT
+        uses: entur/gha-maven-central/.github/actions/jreleaser-release@v1
+        with:
+          version: ${{ steps.final-version.outputs.version }}
+          version_tag_prefix: ${{ inputs.version_tag_prefix }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          sonatype_username: ${{ secrets.SONATYPE_AUTH_USER }}
+          sonatype_password: ${{ secrets.SONATYPE_AUTH_TOKEN }}
+          gpg_public_key: ${{ secrets.SONATYPE_GPG_KEY_PUBLIC }}
+          gpg_secret_key: ${{ secrets.SONATYPE_GPG_KEY }}
+          gpg_passphrase: ${{ secrets.SONATYPE_GPG_KEY_PASSWORD }}
+          artifactory_user: ${{ secrets.ARTIFACTORY_AUTH_USER }}
+          artifactory_token: ${{ secrets.ARTIFACTORY_AUTH_TOKEN }}
 
       - name: Prepare and Push Next Version (${{ steps.final-version.outputs.next_version }})
         uses: entur/gha-maven-central/.github/actions/update-version@v1
