@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.1](https://github.com/entur/gha-maven-central/compare/v1.3.0...v1.3.1) (2026-03-30)
+
+
+### Bug Fixes
+
+* Remove packages permission ([#41](https://github.com/entur/gha-maven-central/issues/41)) ([7d34f6a](https://github.com/entur/gha-maven-central/commit/7d34f6ad231a89b29da2c474d60ed8993d391d15))
+
 ## [1.3.0](https://github.com/entur/gha-maven-central/compare/v1.2.5...v1.3.0) (2025-08-14)
 
 

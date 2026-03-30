@@ -90,7 +90,6 @@ jobs:
     permissions:
       contents: write
       issues: write
-      packages: write
     env:
       JRELEASER_MAVENCENTRAL_URL: "https://central.sonatype.com/api/v1/publisher"
       JRELEASER_DEPLOY_MAVEN_MAVENCENTRAL_ACTIVE: "RELEASE"
