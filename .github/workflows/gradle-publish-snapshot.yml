@@ -151,8 +151,6 @@ jobs:
           GHA_MAVENCENTRAL_GPG_PUBLIC_KEY: ${{ secrets.SONATYPE_GPG_KEY_PUBLIC }}
           GHA_MAVENCENTRAL_GPG_SECRET_KEY: ${{ secrets.SONATYPE_GPG_KEY }}
           GHA_MAVENCENTRAL_GPG_PASSPHRASE: ${{ secrets.SONATYPE_GPG_KEY_PASSWORD }}
-          JFROG_USER: ${{ secrets.ARTIFACTORY_AUTH_USER }}
-          JFROG_PASS: ${{ secrets.ARTIFACTORY_AUTH_TOKEN }}
         run: |
           mkdir -p $HOME/.jreleaser
           cat << EOF >>$HOME/.jreleaser/config.toml
@@ -169,8 +167,6 @@ jobs:
         env:
           GHA_MAVENCENTRAL_VERSION_FILE_VARIABLE_NAME: ${{ inputs.version_file_variable_name }}
           GHA_MAVENCENTRAL_VERSION: ${{ steps.snapshot-version.outputs.version }}
-          JFROG_USER: ${{ secrets.ARTIFACTORY_AUTH_USER }}
-          JFROG_PASS: ${{ secrets.ARTIFACTORY_AUTH_TOKEN }}
         run: |
           ./gradlew -Pversion=$GHA_MAVENCENTRAL_VERSION -P$GHA_MAVENCENTRAL_VERSION_FILE_VARIABLE_NAME=$GHA_MAVENCENTRAL_VERSION jreleaserConfig
 
@@ -180,8 +176,6 @@ jobs:
         env:
           GHA_MAVENCENTRAL_VERSION_FILE_VARIABLE_NAME: ${{ inputs.version_file_variable_name }}
           GHA_MAVENCENTRAL_VERSION: ${{ steps.snapshot-version.outputs.version }}
-          JFROG_USER: ${{ secrets.ARTIFACTORY_AUTH_USER }}
-          JFROG_PASS: ${{ secrets.ARTIFACTORY_AUTH_TOKEN }}
         run: |
           ./gradlew -Pversion=$GHA_MAVENCENTRAL_VERSION -P$GHA_MAVENCENTRAL_VERSION_FILE_VARIABLE_NAME=$GHA_MAVENCENTRAL_VERSION publish --info --stacktrace
 
@@ -191,8 +185,6 @@ jobs:
         env:
           GHA_MAVENCENTRAL_VERSION_FILE_VARIABLE_NAME: ${{ inputs.version_file_variable_name }}
           GHA_MAVENCENTRAL_VERSION: ${{ steps.snapshot-version.outputs.version }}
-          JFROG_USER: ${{ secrets.ARTIFACTORY_AUTH_USER }}
-          JFROG_PASS: ${{ secrets.ARTIFACTORY_AUTH_TOKEN }}
         run: |
           ./gradlew -Pversion=$GHA_MAVENCENTRAL_VERSION -P$GHA_MAVENCENTRAL_VERSION_FILE_VARIABLE_NAME=$GHA_MAVENCENTRAL_VERSION jreleaserDeploy --info --stacktrace
           echo ":rocket: Deployed snapshot $GHA_MAVENCENTRAL_VERSION to Maven Central." >> $GITHUB_STEP_SUMMARY
