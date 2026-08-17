@@ -1,0 +1,201 @@
+name: Publish Snapshot to Maven Central (Gradle)
+description: "Publish snapshot artifact to Maven Central for a Gradle library project."
+on:
+  workflow_call:
+    inputs:
+      runner:
+        description: "Job Runner"
+        required: false
+        type: string
+        default: "ubuntu-24.04"
+      git_ref:
+        description: 'Option to override git reference to checkout before build'
+        type: string
+        required: false
+      java_version:
+        description: "Java Runtime Version"
+        required: false
+        type: number
+        default: 21
+      java_distribution:
+        description: "Java distribution for Setup-Java"
+        required: false
+        type: string
+        default: "liberica"
+      # GET VERSION
+      version_strategy:
+        description: 'Strategy to use for version extraction. Currently supports "file" or "tag".'
+        required: false
+        type: string
+        default: "file"
+      version_file_name:
+        description: "The name of the file containing the version number"
+        required: false
+        type: string
+        default: "gradle.properties"
+      version_file_variable_name:
+        description: "The name of the file variable the previous version number"
+        required: false
+        type: string
+        default: 'version'
+      version_tag_prefix:
+        description: "The prefix of the tag containing the previous version number to extract (used with the tag strategy)"
+        required: false
+        type: string
+        default: "v"
+
+    secrets:
+      GIT_SSH_KEY:
+        description: "Option to override git ssh key to checkout before build"
+        required: false
+      SONATYPE_AUTH_USER:
+        required: true
+      SONATYPE_AUTH_TOKEN:
+        required: true
+      SONATYPE_GPG_KEY_PUBLIC:
+        required: true
+      SONATYPE_GPG_KEY:
+        required: true
+      SONATYPE_GPG_KEY_PASSWORD:
+        required: true
+
+    outputs:
+      version:
+        description: Published snapshot version
+        value: ${{ jobs.publish.outputs.version }}
+
+concurrency:
+  group: maven-publish-snapshot-${{ github.ref }}
+
+jobs:
+  publish:
+    runs-on: ${{ inputs.runner }}
+    permissions:
+      contents: read
+    env:
+      JRELEASER_DEPLOY_MAVEN_NEXUS2_ACTIVE: "SNAPSHOT"
+      JRELEASER_NEXUS2_URL: "https://ossrh-staging-api.central.sonatype.com/service/local"
+      JRELEASER_NEXUS2_SNAPSHOT_URL: "https://central.sonatype.com/repository/maven-snapshots"
+      JRELEASER_OVERWRITE: true
+      JRELEASER_UPDATE: true
+      JRELEASER_GIT_ROOT_SEARCH: true
+    outputs:
+      version: ${{ steps.publish.outputs.version }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        if: ${{ inputs.git_ref == '' }}
+        with:
+          fetch-tags: ${{ inputs.version_strategy == 'tag' && 'true' || 'false' }}
+          fetch-depth: 0
+          ssh-key: ${{ secrets.GIT_SSH_KEY }}
+
+      - name: Checkout code with reference
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        if: ${{ inputs.git_ref != '' }}
+        with:
+          ref: ${{ inputs.git_ref }}
+          fetch-tags: ${{ inputs.version_strategy == 'tag' && 'true' || 'false' }}
+          fetch-depth: 0
+          ssh-key: ${{ secrets.GIT_SSH_KEY }}
+
+      - name: Set up Java ${{ inputs.java_version }}
+        uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4.9.1
+        with:
+          java-version: ${{ inputs.java_version }}
+          distribution: ${{ inputs.java_distribution }}
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@748248ddd2a24f49513d8f472f81c3a07d4d50e1 # v4.4.4
+
+      - id: get-version
+        uses: entur/gha-maven-central/.github/actions/get-version@v1
+        with:
+          version_strategy: ${{ inputs.version_strategy }}
+          version_file_name: ${{ inputs.version_file_name }}
+          version_file_variable_name: ${{ inputs.version_file_variable_name }}
+          version_tag_prefix: ${{ inputs.version_tag_prefix }}
+
+      - id: snapshot-version
+        shell: bash
+        env:
+          GHA_MAVENCENTRAL_CURRENT_VERSION: ${{ steps.get-version.outputs.version }}
+          GHA_MAVENCENTRAL_CURRENT_VERSION_MAJOR: ${{ steps.get-version.outputs.version_major }}
+          GHA_MAVENCENTRAL_CURRENT_VERSION_MINOR: ${{ steps.get-version.outputs.version_minor }}
+          GHA_MAVENCENTRAL_CURRENT_VERSION_PATCH: ${{ steps.get-version.outputs.version_patch }}
+        run: |
+          major=$GHA_MAVENCENTRAL_CURRENT_VERSION_MAJOR
+          minor=$GHA_MAVENCENTRAL_CURRENT_VERSION_MINOR
+          patch=$GHA_MAVENCENTRAL_CURRENT_VERSION_PATCH
+
+          # Strip existing -SNAPSHOT suffix if present before appending
+          patch=${patch%%-SNAPSHOT}
+
+          echo "VERSION=$major.$minor.$patch-SNAPSHOT" >> $GITHUB_ENV
+          echo "version=$major.$minor.$patch-SNAPSHOT" >> $GITHUB_OUTPUT
+
+      - name: Generate JReleaser Maven Central Config
+        shell: bash
+        env:
+          GHA_MAVENCENTRAL_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GHA_MAVENCENTRAL_SONATYPE_USERNAME: ${{ secrets.SONATYPE_AUTH_USER }}
+          GHA_MAVENCENTRAL_SONATYPE_PASSWORD: ${{ secrets.SONATYPE_AUTH_TOKEN }}
+          GHA_MAVENCENTRAL_GPG_PUBLIC_KEY: ${{ secrets.SONATYPE_GPG_KEY_PUBLIC }}
+          GHA_MAVENCENTRAL_GPG_SECRET_KEY: ${{ secrets.SONATYPE_GPG_KEY }}
+          GHA_MAVENCENTRAL_GPG_PASSPHRASE: ${{ secrets.SONATYPE_GPG_KEY_PASSWORD }}
+          JFROG_USER: ${{ secrets.ARTIFACTORY_AUTH_USER }}
+          JFROG_PASS: ${{ secrets.ARTIFACTORY_AUTH_TOKEN }}
+        run: |
+          mkdir -p $HOME/.jreleaser
+          cat << EOF >>$HOME/.jreleaser/config.toml
+          JRELEASER_GITHUB_TOKEN="$GHA_MAVENCENTRAL_GITHUB_TOKEN"
+          JRELEASER_NEXUS2_USERNAME="$GHA_MAVENCENTRAL_SONATYPE_USERNAME"
+          JRELEASER_NEXUS2_PASSWORD="$GHA_MAVENCENTRAL_SONATYPE_PASSWORD"
+          JRELEASER_GPG_PASSPHRASE="$GHA_MAVENCENTRAL_GPG_PASSPHRASE"
+          JRELEASER_GPG_PUBLIC_KEY="""$(echo "$GHA_MAVENCENTRAL_GPG_PUBLIC_KEY" | base64 --decode)"""
+          JRELEASER_GPG_SECRET_KEY="""$(echo "$GHA_MAVENCENTRAL_GPG_SECRET_KEY" | base64 --decode)"""
+          EOF
+
+      - name: Verify JReleaser Config
+        shell: bash
+        env:
+          GHA_MAVENCENTRAL_VERSION_FILE_VARIABLE_NAME: ${{ inputs.version_file_variable_name }}
+          GHA_MAVENCENTRAL_VERSION: ${{ steps.snapshot-version.outputs.version }}
+          JFROG_USER: ${{ secrets.ARTIFACTORY_AUTH_USER }}
+          JFROG_PASS: ${{ secrets.ARTIFACTORY_AUTH_TOKEN }}
+        run: |
+          ./gradlew -Pversion=$GHA_MAVENCENTRAL_VERSION -P$GHA_MAVENCENTRAL_VERSION_FILE_VARIABLE_NAME=$GHA_MAVENCENTRAL_VERSION jreleaserConfig
+
+      - name: JReleaser stage
+        id: stage
+        shell: bash
+        env:
+          GHA_MAVENCENTRAL_VERSION_FILE_VARIABLE_NAME: ${{ inputs.version_file_variable_name }}
+          GHA_MAVENCENTRAL_VERSION: ${{ steps.snapshot-version.outputs.version }}
+          JFROG_USER: ${{ secrets.ARTIFACTORY_AUTH_USER }}
+          JFROG_PASS: ${{ secrets.ARTIFACTORY_AUTH_TOKEN }}
+        run: |
+          ./gradlew -Pversion=$GHA_MAVENCENTRAL_VERSION -P$GHA_MAVENCENTRAL_VERSION_FILE_VARIABLE_NAME=$GHA_MAVENCENTRAL_VERSION publish --info --stacktrace
+
+      - name: JReleaser deploy snapshot
+        id: publish
+        shell: bash
+        env:
+          GHA_MAVENCENTRAL_VERSION_FILE_VARIABLE_NAME: ${{ inputs.version_file_variable_name }}
+          GHA_MAVENCENTRAL_VERSION: ${{ steps.snapshot-version.outputs.version }}
+          JFROG_USER: ${{ secrets.ARTIFACTORY_AUTH_USER }}
+          JFROG_PASS: ${{ secrets.ARTIFACTORY_AUTH_TOKEN }}
+        run: |
+          ./gradlew -Pversion=$GHA_MAVENCENTRAL_VERSION -P$GHA_MAVENCENTRAL_VERSION_FILE_VARIABLE_NAME=$GHA_MAVENCENTRAL_VERSION jreleaserDeploy --info --stacktrace
+          echo ":rocket: Deployed snapshot $GHA_MAVENCENTRAL_VERSION to Maven Central." >> $GITHUB_STEP_SUMMARY
+          echo "version=$GHA_MAVENCENTRAL_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Upload Build Reports
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: reports
+          path: |
+            **/out
+            **/build/reports/
+            **/build/test-results/
