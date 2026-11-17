@@ -214,7 +214,6 @@ jobs:
 
       - name: Verify JReleaser Config
         shell: bash
-        env:
         run: |
           # include publication profile in all commands so that modules which
           # are excluded from publishing (i.e. examples) can be disabled
