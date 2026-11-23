@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.0](https://github.com/entur/gha-maven-central/compare/v1.3.1...v1.4.0) (2026-11-23)
+
+
+### Features
+
+* Remove use of jfrog secrets ([#52](https://github.com/entur/gha-maven-central/issues/52)) ([d155276](https://github.com/entur/gha-maven-central/commit/d155276e5bb0253104cf7ff7ccf93c582bc69741))
+
 ## [1.3.1](https://github.com/entur/gha-maven-central/compare/v1.3.0...v1.3.1) (2026-03-30)
 
 
